@@ -61,17 +61,14 @@ import javax.enterprise.inject.spi.BeanManager;
  */
 public class InitializeCache implements SystemEventListener {
 
-   public static final int USER_COUNT = 3000;
-
-   private static final int SEVEN_DAYS_IN_MILLISECONDS = 7 * 24 * 3600 * 1000;
-
-   private Random randomNumber = new Random();
-
-   private Logger log = Logger.getLogger(this.getClass().getName());
-
+   private static final int       USER_COUNT                 = Integer.getInteger("chunchun.cache.init.users", 3000);
+   private static final int       SEVEN_DAYS_IN_MILLISECONDS = 7 * 24 * 3600 * 1000;
+   private static final int       USER_WATCHES_COUNT         = Integer.getInteger("chunchun.cache.init.watches",20);
+   private static final int       POSTS                      = Integer.getInteger("chunchun.cache.init.posts",20);
+   private Random                 randomNumber               = new Random();
+   private Logger                 log                        = Logger.getLogger(this.getClass().getName());
    private CacheContainerProvider provider;
-
-   private UserTransaction utx;
+   private UserTransaction        utx;
 
    @Override
    public void processEvent(SystemEvent event) throws AbortProcessingException {
@@ -80,6 +77,8 @@ public class InitializeCache implements SystemEventListener {
    }
 
    public void startup() {
+      if (Boolean.getBoolean("chunchun.cache.init.skip")) return;
+
       BasicCache<String, Object> users = provider.getCacheContainer().getCache("userCache");
       BasicCache<PostKey, Object> posts = provider.getCacheContainer().getCache("postCache");
 
@@ -101,13 +100,12 @@ public class InitializeCache implements SystemEventListener {
             u.setPassword(encryptedPass);
 
             // GENERATE POSTS FOR EACH USER
-            int numGeneratedPosts = 20;
             TreeSet<Long> randomTimesSorted = new TreeSet<Long>();
-            for (int j = 1; j != numGeneratedPosts; j++) {
+            for (int j = 1; j != POSTS; j++) {
                 randomTimesSorted.add(getRandomTime());
             }
 
-            for (int j = 1; j != numGeneratedPosts; j++) {
+            for (int j = 1; j != POSTS; j++) {
                long randomTime = randomTimesSorted.pollFirst();
                Post t = new Post(u.getUsername(), "Post number " + j + " for user "
                         + u.getName() + " at " + new Date(randomTime), randomTime);
@@ -122,7 +120,7 @@ public class InitializeCache implements SystemEventListener {
          // GENERATE RANDOM WATCHERS AND WATCHING FOR EACH USER
          for (int i = 1; i != USER_COUNT; i++) {
             User u = (User) users.get("user" + i);
-            for (User watching : generateRandomUsers(u, 20, USER_COUNT)) {
+            for (User watching : generateRandomUsers(u, USER_WATCHES_COUNT, USER_COUNT)) {
                if (!u.getUsername().equals(watching.getUsername())) {
                   u.getWatching().add(watching.getUsername());
                }
