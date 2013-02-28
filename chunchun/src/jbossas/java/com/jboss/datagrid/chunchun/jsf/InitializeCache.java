@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.faces.application.Application;
 import javax.faces.event.AbortProcessingException;
@@ -142,12 +143,12 @@ public class InitializeCache implements SystemEventListener {
          utx.commit();
          log.info("Successfully imported data!");
       } catch (Exception e) {
-         log.warning("An exception occured while populating the datagrid! Rolling back the transaction");
-         e.printStackTrace();
+         log.log(Level.SEVERE, "An exception occured while populating the datagrid! Rolling back the transaction",e);
          if (utx != null) {
             try {
                utx.rollback();
             } catch (Exception e1) {
+            	log.log(Level.SEVERE, "failed to rollback transaction transaction for cache init", e1);
             }
          }
       }
