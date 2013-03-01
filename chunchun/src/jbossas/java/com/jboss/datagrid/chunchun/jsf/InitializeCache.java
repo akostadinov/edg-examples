@@ -129,7 +129,7 @@ public class InitializeCache implements SystemEventListener {
             users.replace("user" + i, u);
          }
 
-         for (int i = 1; i < USER_COUNT; i++) { // last user will be fine anyways
+         for (int i = 1; i <= USER_COUNT; i++) {
             User u = (User) users.get("user" + i);
             for (String username: u.getWatching()) {
                User us = (User) users.get(username);
