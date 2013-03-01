@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -37,14 +36,14 @@ public class ChunchunServlet extends HttpServlet {
    private static Map<Integer, Boolean> userMap = new HashMap<Integer, Boolean>();   //registered occupied users
 
    static {
-      for (int i = 1; i != InitializeCache.USER_COUNT; i++) {
+      for (int i = 1; i != InitializeCache.getUserCount(); i++) {
          userMap.put(new Integer(i), false); //false == not currently in use == not logged in; true == logged in
       }
    }
 
    private static synchronized int getNextAvailableUser() {
       int index = 1;
-      while (index != InitializeCache.USER_COUNT) {
+      while (index != InitializeCache.getUserCount()) {
          if (userMap.get(index).equals(false)) {
             userMap.put(index, true);
             return index;
@@ -78,7 +77,6 @@ public class ChunchunServlet extends HttpServlet {
          //http://localhost:8080/chunchun/chunchunservlet?command=login&user=
 
          if (!auth.isLoggedIn()) {
-            Random r = new Random(System.currentTimeMillis());
             int randomUserId = ChunchunServlet.getNextAvailableUser();
             String username = "user" + randomUserId;
             String password  = "pass" + randomUserId;

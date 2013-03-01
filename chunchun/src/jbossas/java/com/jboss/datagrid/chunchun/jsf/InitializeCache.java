@@ -195,6 +195,10 @@ public class InitializeCache implements SystemEventListener {
       return hashword;
    }
 
+   public static int getUserCount() {
+      return USER_COUNT;
+   }
+   
    private BeanManager getBeanManagerFromJNDI() {
       InitialContext context;
       Object result;
