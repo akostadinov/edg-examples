@@ -78,6 +78,7 @@ public class InitializeCache implements SystemEventListener {
 
    public void startup() {
       if (Boolean.getBoolean("chunchun.cache.init.skip")) return;
+      log.info("Initializing cache with " + USER_COUNT + " users with " + POSTS + " initial posts and " + USER_WATCHES_COUNT + " users watches each");
 
       BasicCache<String, Object> users = provider.getCacheContainer().getCache("userCache");
       BasicCache<PostKey, Object> posts = provider.getCacheContainer().getCache("postCache");
@@ -139,9 +140,9 @@ public class InitializeCache implements SystemEventListener {
             }
          }
          utx.commit();
-         log.info("Successfully imported data!");
+         log.info("Initializing cache completed successfully");
       } catch (Exception e) {
-         log.log(Level.SEVERE, "An exception occured while populating the datagrid! Rolling back the transaction",e);
+         log.log(Level.SEVERE, "An exception occured while populating the datagrid! Rolling back the transaction. Aborting cache initialization.", e);
          if (utx != null) {
             try {
                utx.rollback();
