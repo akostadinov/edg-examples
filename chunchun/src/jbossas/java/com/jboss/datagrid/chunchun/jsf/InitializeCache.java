@@ -102,11 +102,11 @@ public class InitializeCache implements SystemEventListener {
 
             // GENERATE POSTS FOR EACH USER
             TreeSet<Long> randomTimesSorted = new TreeSet<Long>();
-            for (int j = 1; j != POSTS; j++) {
+            for (int j = 1; j <= POSTS; j++) {
                 randomTimesSorted.add(getRandomTime());
             }
 
-            for (int j = 1; j != POSTS; j++) {
+            for (int j = 1; j <= POSTS; j++) {
                long randomTime = randomTimesSorted.pollFirst();
                Post t = new Post(u.getUsername(), "Post number " + j + " for user "
                         + u.getName() + " at " + new Date(randomTime), randomTime);
@@ -119,7 +119,7 @@ public class InitializeCache implements SystemEventListener {
          }
 
          // GENERATE RANDOM WATCHERS AND WATCHING FOR EACH USER
-         for (int i = 1; i != USER_COUNT; i++) {
+         for (int i = 1; i <= USER_COUNT; i++) {
             User u = (User) users.get("user" + i);
             for (User watching : generateRandomUsers(u, USER_WATCHES_COUNT, USER_COUNT)) {
                if (!u.getUsername().equals(watching.getUsername())) {
@@ -129,7 +129,7 @@ public class InitializeCache implements SystemEventListener {
             users.replace("user" + i, u);
          }
 
-         for (int i = 1; i != USER_COUNT; i++) {
+         for (int i = 1; i < USER_COUNT; i++) { // last user will be fine anyways
             User u = (User) users.get("user" + i);
             for (String username: u.getWatching()) {
                User us = (User) users.get(username);
@@ -173,7 +173,7 @@ public class InitializeCache implements SystemEventListener {
       BasicCache<String, Object> users = provider.getCacheContainer().getCache("userCache");
       Random r = new Random(getRandomTime());
       Set<User> result = new HashSet<User>();
-      while (result.size() != count) {
+      while (result.size() < count) {
          int id = (r.nextInt(outOf - 1)) + 1; // do not return 0
          User u = (User) users.get("user" + id);
          if (u != null && u.equals(forWhom))
