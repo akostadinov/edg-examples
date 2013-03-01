@@ -30,6 +30,8 @@ import com.jboss.datagrid.chunchun.session.UserBean;
  *
  * @author Martin Gencur
  */
+
+@SuppressWarnings("serial")
 @WebServlet(urlPatterns={"/chunchunservlet"})
 public class ChunchunServlet extends HttpServlet {
 

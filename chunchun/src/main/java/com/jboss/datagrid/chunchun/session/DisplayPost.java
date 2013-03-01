@@ -32,9 +32,7 @@ import java.util.Date;
  * 
  */
 public class DisplayPost {
-
-   private static final long serialVersionUID = 29993133022854381L;
-   
+ 
    private static final long MS_PER_SECOND = 1000;
    
    private static final long MS_PER_MINUTE = 60 * MS_PER_SECOND;

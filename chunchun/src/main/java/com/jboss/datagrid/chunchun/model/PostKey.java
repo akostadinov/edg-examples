@@ -29,6 +29,8 @@ import java.io.Serializable;
  * @author Martin Gencur
  * 
  */
+
+@SuppressWarnings("serial")
 public class PostKey implements Serializable {
 
    private String owner;
