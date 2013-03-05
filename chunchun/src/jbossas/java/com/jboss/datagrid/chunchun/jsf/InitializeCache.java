@@ -83,6 +83,8 @@ public class InitializeCache implements SystemEventListener {
       BasicCache<String, Object> users = provider.getCacheContainer().getCache("userCache");
       BasicCache<PostKey, Object> posts = provider.getCacheContainer().getCache("postCache");
 
+      // if (!users.isEmpty()) return; // can cache be non-empty on start-up?
+
       utx = getUserTransactionFromJNDI();
 
       try {
