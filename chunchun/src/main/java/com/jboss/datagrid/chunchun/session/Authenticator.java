@@ -51,6 +51,8 @@ public class Authenticator implements Serializable {
    
    private String password = "pass1";
 
+   private BasicCache<String, Object> userCache;
+
    @Inject
    private CacheContainerProvider provider;
 
@@ -65,7 +67,7 @@ public class Authenticator implements Serializable {
    }
 
    public void login() {
-      BasicCache<String, Object> userCache = provider.getCacheContainer().getCache("userCache");
+      userCache = provider.getCacheContainer().getCache("userCache");
       User currentUser = (User) userCache.get(username);
       if (currentUser == null) {
          FacesContext.getCurrentInstance().addMessage("msg1",
@@ -121,6 +123,6 @@ public class Authenticator implements Serializable {
    }
 
    public User getUser() {
-      return user;
+      return (User) userCache.get(username);
    }
 }

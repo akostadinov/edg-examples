@@ -25,6 +25,9 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.inject.Instance;
@@ -51,10 +54,15 @@ public class UserBean implements Serializable {
    @Inject
    private Instance<Authenticator> auth;
 
+   @Inject
+   private PostBean postBean;
+
    private User watchedUser;
 
    @Inject
    private CacheContainerProvider provider;
+
+   private Logger log = Logger.getLogger(this.getClass().getName());
 
    @PostConstruct
    public void initialize() {
@@ -141,14 +149,19 @@ public class UserBean implements Serializable {
          getUserCache().replace(watchedUser.getUsername(), watchedUser); //to let Infinispan know the entry has changed -> replicate
          getUserCache().replace(me.getUsername(), me); //to let Infinispan know the entry has changed -> replicate
          utx.commit();
+
+         postBean.resetRecentPosts();
       } catch (Exception e) {
          if (utx != null) {
             try {
                utx.rollback();
+               log.log(Level.SEVERE, "failed to rollback transaction for watching user " + user.getUsername(), e);
             } catch (Exception e1) {
             }
          }
+         throw new RuntimeException("failed to start watching user " + user.getUsername());
       }
+
       return null;
    }
    
@@ -162,14 +175,19 @@ public class UserBean implements Serializable {
          getUserCache().replace(watchedUser.getUsername(), watchedUser);
          getUserCache().replace(me.getUsername(), me);
          utx.commit();
+
+         postBean.resetRecentPosts();
       } catch (Exception e) {
          if (utx != null) {
             try {
                utx.rollback();
             } catch (Exception e1) {
+               log.log(Level.SEVERE, "failed to rollback stop-watching transaction for user" + user.getUsername(), e);
             }
          }
+         throw new RuntimeException("failed to stop watching user " + user.getUsername());
       }
+
       return null;
    }
 
