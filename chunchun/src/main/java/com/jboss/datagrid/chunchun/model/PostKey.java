@@ -30,8 +30,9 @@ import java.io.Serializable;
  * 
  */
 
-@SuppressWarnings("serial")
 public class PostKey implements Serializable {
+
+   private static final long serialVersionUID = -7624874290312596494L;
 
    private String owner;
    
