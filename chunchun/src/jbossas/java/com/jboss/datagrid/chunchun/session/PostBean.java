@@ -22,11 +22,13 @@
 package com.jboss.datagrid.chunchun.session;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
@@ -35,6 +37,9 @@ import javax.transaction.UserTransaction;
 
 import com.jboss.datagrid.chunchun.model.Post;
 import org.infinispan.api.BasicCache;
+// import org.infinispan.DecoratedCache;
+// import org.infinispan.context.Flag;
+
 import com.jboss.datagrid.chunchun.model.PostKey;
 import com.jboss.datagrid.chunchun.model.User;
 
@@ -53,7 +58,7 @@ public class PostBean implements Serializable {
 
    private static final int INITIAL_POSTS_LIMIT = 30;
    private int loadedPosts = INITIAL_POSTS_LIMIT;
-   private static final int INCREASE_LOADED_BY = 50; //increase loadedPosts by
+   // private static final int INCREASE_LOADED_BY = 50; //increase loadedPosts by
    private static final int INITIAL_SHOWED_POSTS = 10;
    private int showedPosts = INITIAL_SHOWED_POSTS;
    private static final int INCREASE_SHOWED_BY = 10; //increase showedPosts by
@@ -94,6 +99,8 @@ public class PostBean implements Serializable {
    @Inject
    private UserTransaction utx;
 
+   private Logger log = Logger.getLogger(this.getClass().getName());
+
    public String sendPost() {
       Post t = new Post(auth.get().getUsername(), message);
       try {
@@ -112,6 +119,28 @@ public class PostBean implements Serializable {
          }
       }
       return null;
+   }
+
+   public void deletePost(DisplayPost post) {
+      PostKey key;
+      try {
+         utx.begin();
+         User u = auth.get().getUser();
+         key = new PostKey(u.getUsername(), post.getTimeOfPost());
+         getPostCache().remove(key); // TODO add flags new DecoratedCache(getPostCache(), Flag.SKIP_REMOTE_LOOKUP, Flag.SKIP_CACHE_LOAD);
+         u.getPosts().remove(key);
+         getUserCache().replace(auth.get().getUsername(), u);
+         utx.commit();
+      } catch (Exception e) {
+         if (utx != null) {
+            try {
+               utx.rollback();
+            } catch (Exception e1) {
+               log.log(Level.SEVERE,"failed to rollback failed transaction to remove message", e1);
+            }
+         }
+         throw new RuntimeException("failed to remove message: " + auth.get().getUsername() + " " + post.getTimeOfPost(), e);
+      }
    }
 
    public List<DisplayPost> getRecentPosts() {
