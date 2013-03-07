@@ -23,7 +23,6 @@ package com.jboss.datagrid.chunchun.model;
 
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
