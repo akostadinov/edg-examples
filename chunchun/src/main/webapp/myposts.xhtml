@@ -62,7 +62,7 @@
 									<h:panelGrid columns="2" styleClass="timeofpost">
 		                        		<h:outputText value="#{post.friendlyTimeOfPost}"/>
 										<h:commandLink action="#{postBean.deletePost(post)}" onclick="return confirm('Are you sure you want to delete this post?');">
-											<h:graphicImage value="/image/deleteButton.png" styleClass="deleteButton"/>
+											<h:graphicImage value="/image/deleteButton.png" styleClass="deleteButton" alt="delete post"/>
 									    </h:commandLink>
 									</h:panelGrid>
 								</h:panelGrid>
