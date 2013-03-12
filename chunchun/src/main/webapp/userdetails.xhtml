@@ -24,14 +24,14 @@
 		        		<h:commandLink value="Watching">
         					<rich:componentControl target="popupfollowing" operation="show" />
     					</h:commandLink>
-		        		<h:graphicImage value="/image/divider.png" styleClass="divider"/>
+		        		<h:graphicImage value="/image/divider.png" styleClass="divider" alt=""/>
 		        		<h:commandLink value="Watchers">
         					<rich:componentControl target="popupfollowers" operation="show" />
     					</h:commandLink>
    					</h:panelGrid>
    					<h:panelGrid columns="3" styleClass="homebutton">
 	        			<h:commandLink action="#{userBean.goHome}" value="Home" />
-	        			<h:graphicImage value="/image/divider.png" styleClass="divider"/>
+	        			<h:graphicImage value="/image/divider.png" styleClass="divider" alt=""/>
     			    	<h:commandLink action="#{auth.logout}" value="Log out"/>
 	        		</h:panelGrid>
 	        	</h:panelGrid>

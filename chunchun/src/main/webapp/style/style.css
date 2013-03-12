@@ -184,7 +184,8 @@ div#headerdetailsright {
 }
 
 .divider {
-	height: 19px;
+	height: 7px;
+	width: 1px;
 	margin-left: 3px;
 	margin-right: 3px;
 }
@@ -279,7 +280,7 @@ div#headerdetailsright .linkspanel {
 }
 
 img.deleteButton {
-	border: 0px;
+	border-style: none;
 }
 
 img.avatar {
