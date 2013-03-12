@@ -22,13 +22,15 @@
 	        		<h:commandButton action="#{postBean.sendPost}" value="Chirp" class="signinbutton" />
 	        	</h:panelGrid>
 	        	<h:panelGrid columns="2" styleClass="linkspanel">
-	        		<h:panelGrid columns="5">
+	        		<h:panelGrid columns="7">
+				        <h:commandLink value="Refresh" action="#{postBean.resetRecentPosts()}"/>
+				        <h:graphicImage value="/image/divider.png" styleClass="divider" alt=""/>
 		        		<h:link outcome="myposts.jsf" value="My posts"/>
-		        		<h:graphicImage value="/image/divider.png" styleClass="divider"/>
+		        		<h:graphicImage value="/image/divider.png" styleClass="divider" alt=""/>
 		        		<h:commandLink value="Watching">
 	       					<rich:componentControl target="popupfollowing" operation="show" />
 	   					</h:commandLink>
-		        		<h:graphicImage value="/image/divider.png" styleClass="divider"/>
+		        		<h:graphicImage value="/image/divider.png" styleClass="divider" alt=""/>
 		        		<h:commandLink value="Watchers">
 	       					<rich:componentControl target="popupfollowers" operation="show" />
 	   					</h:commandLink>
