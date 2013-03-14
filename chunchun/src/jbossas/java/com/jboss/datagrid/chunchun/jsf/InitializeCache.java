@@ -78,7 +78,7 @@ public class InitializeCache implements SystemEventListener {
 
    public void startup() {
       if (Boolean.getBoolean("chunchun.cache.init.skip")) return;
-      log.info("Initializing cache with " + USER_COUNT + " users with " + POSTS + " initial posts and " + USER_WATCHES_COUNT + " users watches each");
+      log.info("Initializing cache with " + USER_COUNT + " users, each with " + POSTS + " initial posts and " + USER_WATCHES_COUNT + " user watches");
 
       BasicCache<String, Object> users = provider.getCacheContainer().getCache("userCache");
       BasicCache<PostKey, Object> posts = provider.getCacheContainer().getCache("postCache");
