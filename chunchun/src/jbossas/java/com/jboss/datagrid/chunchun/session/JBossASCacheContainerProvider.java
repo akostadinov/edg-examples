@@ -21,6 +21,10 @@
  */
 package com.jboss.datagrid.chunchun.session;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import org.infinispan.api.BasicCacheContainer;
@@ -45,19 +49,33 @@ import org.infinispan.util.concurrent.IsolationLevel;
 public class JBossASCacheContainerProvider implements CacheContainerProvider {
 
    private BasicCacheContainer manager;
+   private Logger log = Logger.getLogger(this.getClass().getName());
 
    public BasicCacheContainer getCacheContainer() {
       if (manager == null) {
-         GlobalConfiguration glob = new GlobalConfigurationBuilder().nonClusteredDefault()
+         String cacheConfig = System.getProperty("chunchun.cache.config","");
+         if (cacheConfig.equals("") || cacheConfig.equals("dummy")) {
+            log.log(Level.INFO, "Setting up simple local memory only cache.");
+            GlobalConfiguration glob = new GlobalConfigurationBuilder().nonClusteredDefault()
                   .globalJmxStatistics().enable().jmxDomain("chunchun").build();
-         Configuration loc = new ConfigurationBuilder().jmxStatistics().enable().clustering()
+            Configuration loc = new ConfigurationBuilder().jmxStatistics().enable().clustering()
                   .cacheMode(CacheMode.LOCAL).transaction()
                   .useSynchronization(true)
                   .transactionMode(TransactionMode.TRANSACTIONAL).autoCommit(false)
                   .lockingMode(LockingMode.OPTIMISTIC)
                   .transactionManagerLookup(new GenericTransactionManagerLookup()).locking()
                   .isolationLevel(IsolationLevel.READ_COMMITTED).build();
-         manager = new DefaultCacheManager(glob, loc, true);
+            manager = new DefaultCacheManager(glob, loc, true);
+         } else if (cacheConfig.endsWith(".xml")) {
+            log.log(Level.INFO, "Setting up cache manager using configuration from file: " + cacheConfig);
+            try {
+               manager = new DefaultCacheManager(cacheConfig, true);
+            } catch (IOException ioe) {
+               throw new RuntimeException("There is some problem reading infinispan cache configuration file: " + cacheConfig, ioe);
+            }
+         } else {
+            throw new RuntimeException("Don't know what to do with cache configuration: " + cacheConfig);
+         }
       }
       return manager;
    }
