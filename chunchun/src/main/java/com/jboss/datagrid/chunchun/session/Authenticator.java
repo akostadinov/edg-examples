@@ -23,6 +23,8 @@ package com.jboss.datagrid.chunchun.session;
 
 import java.io.IOException;
 import java.io.Serializable;
+
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -62,12 +64,16 @@ public class Authenticator implements Serializable {
    @Inject
    private PostBean postBean;
 
+   @PostConstruct
+   public void initialize() {
+      userCache = provider.getCacheContainer().getCache("userCache");
+   }
+   
    public boolean isLoggedIn() {
       return user != null;
    }
 
    public void login() {
-      userCache = provider.getCacheContainer().getCache("userCache");
       User currentUser = (User) userCache.get(username);
       if (currentUser == null) {
          FacesContext.getCurrentInstance().addMessage("msg1",
