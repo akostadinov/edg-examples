@@ -31,7 +31,6 @@ import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.inject.Instance;
-import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.UserTransaction;
@@ -75,7 +74,7 @@ public class UserBean implements Serializable {
    public void showUserImage(OutputStream out, Object data) {
       try {
          User u = (User) getUserCache().get((String) data);
-         ImageIO.write(u.getAvatar(), "jpg", out);
+         out.write(u.getAvatar());
       } catch (Exception e) {
          throw new RuntimeException("Unable to load data for image", e);
       }

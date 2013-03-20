@@ -21,7 +21,6 @@
  */
 package com.jboss.datagrid.chunchun.model;
 
-import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -44,7 +43,7 @@ public class User implements Serializable {
    
    private String whoami; // description of the person
    
-   private BufferedImage avatar;
+   private byte[] avatar;
    
    private CopyOnWriteArrayList<PostKey> posts;
    
@@ -52,7 +51,7 @@ public class User implements Serializable {
    
    private CopyOnWriteArrayList<String> watching;
 
-   public User(String username, String name, String surname, String password, String whoami, BufferedImage avatar) {
+   public User(String username, String name, String surname, String password, String whoami, byte[] avatar) {
       this.username = username;
       this.name = name;
       this.password = password;
@@ -127,11 +126,11 @@ public class User implements Serializable {
       return watching;
    }
 
-   public BufferedImage getAvatar() {
+   public byte[] getAvatar() {
       return avatar;
    }
 
-   public void setAvatar(BufferedImage avatar) {
+   public void setAvatar(byte[] avatar) {
       this.avatar = avatar;
    }
 

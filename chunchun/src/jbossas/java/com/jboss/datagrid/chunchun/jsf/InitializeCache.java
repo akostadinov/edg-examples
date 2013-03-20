@@ -21,9 +21,10 @@
  */
 package com.jboss.datagrid.chunchun.jsf;
 
-import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,7 +40,6 @@ import javax.faces.application.Application;
 import javax.faces.event.AbortProcessingException;
 import javax.faces.event.SystemEvent;
 import javax.faces.event.SystemEventListener;
-import javax.imageio.ImageIO;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.UserTransaction;
@@ -94,6 +94,7 @@ public class InitializeCache implements SystemEventListener {
          for (int i = 1; i <= USER_COUNT; i++) {
             utx.begin();
             User u = null;
+            // if non-jpeg image needs to be used, make sure to tune a4j:mediaOutput mimeType, removing mimeType prop tested to work on FF18 and eclipse
             if (i % 2 == 1) {
                u = new User("user" + i, "Name" + i, "Surname" + i, "tmpPasswd",
                         "Description of person " + i, loadImageFromFile("images" + File.separator + "user1.jpg"));
@@ -152,11 +153,17 @@ public class InitializeCache implements SystemEventListener {
       }
    }
    
-   private BufferedImage loadImageFromFile(String fileName) {
-      BufferedImage image = null;
+   private byte[] loadImageFromFile(String fileName) {
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      byte[] buffer = new byte[1024];
+      int length;
+      InputStream image = null;
       try {
-         image = ImageIO.read(this.getClass().getClassLoader().getResourceAsStream(fileName));
-         return image;
+         image = this.getClass().getClassLoader().getResourceAsStream(fileName);
+         while ((length = image.read(buffer)) != -1) out.write(buffer, 0, length);
+         image.close();
+         out.close();
+         return out.toByteArray();
       } catch (IOException e) {
          throw new RuntimeException("Unable to load image from file " + fileName);
       }
