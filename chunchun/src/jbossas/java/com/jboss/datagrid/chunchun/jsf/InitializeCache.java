@@ -67,7 +67,7 @@ public class InitializeCache implements SystemEventListener {
    private static final int       POSTS                      = Integer.getInteger("chunchun.cache.init.posts",20);
    private Random                 randomNumber               = new Random();
    private Logger                 log                        = Logger.getLogger(this.getClass().getName());
-   private CacheContainerProvider provider;
+   private CacheContainerProvider provider; // with JSF 2.2 this can be injected
    private UserTransaction        utx;
 
    @Override
