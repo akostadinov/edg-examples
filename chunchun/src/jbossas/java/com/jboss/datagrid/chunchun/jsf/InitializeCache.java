@@ -78,18 +78,22 @@ public class InitializeCache implements SystemEventListener {
 
    public void startup() {
       if (Boolean.getBoolean("chunchun.cache.init.skip")) return;
-      log.info("Initializing cache with " + USER_COUNT + " users, each with " + POSTS + " initial posts and " + USER_WATCHES_COUNT + " user watches");
+      log.info("Initializing chunchun cache with " + USER_COUNT + " users, each with " + POSTS + " initial posts and " + USER_WATCHES_COUNT + " user watches");
 
       BasicCache<String, Object> users = provider.getCacheContainer().getCache("userCache");
       BasicCache<PostKey, Object> posts = provider.getCacheContainer().getCache("postCache");
 
-      // if (!users.isEmpty()) return; // can cache be non-empty on start-up?
+      // try to avoid re-initializing cache if it exists
+      if (users.get("user1") != null) {
+         log.info("chunchun cache non-empty, skipping initialization");
+         return;
+      }
 
       utx = getUserTransactionFromJNDI();
 
       try {
-         utx.begin();
          for (int i = 1; i <= USER_COUNT; i++) {
+            utx.begin();
             User u = null;
             if (i % 2 == 1) {
                u = new User("user" + i, "Name" + i, "Surname" + i, "tmpPasswd",
@@ -118,30 +122,24 @@ public class InitializeCache implements SystemEventListener {
             }
             // store the user in a cache
             users.put(u.getUsername(), u);
+            utx.commit();
          }
 
          // GENERATE RANDOM WATCHERS AND WATCHING FOR EACH USER
          for (int i = 1; i <= USER_COUNT; i++) {
+            utx.begin();
             User u = (User) users.get("user" + i);
             for (User watching : generateRandomUsers(u, USER_WATCHES_COUNT, USER_COUNT)) {
                if (!u.getUsername().equals(watching.getUsername())) {
-                  u.getWatching().add(watching.getUsername());
+                  u.addFollowing(watching.getUsername());
+                  watching.addFollower(u.getUsername());
+                  users.replace(watching.getUsername(),watching);
                }
             }
-            users.replace("user" + i, u);
+            users.replace(u.getUsername(), u);
+            utx.commit();
          }
 
-         for (int i = 1; i <= USER_COUNT; i++) {
-            User u = (User) users.get("user" + i);
-            for (String username: u.getWatching()) {
-               User us = (User) users.get(username);
-               if (!us.getWatchers().contains(u.getUsername())) {
-                  us.getWatchers().add(u.getUsername());
-                  users.replace(us.getUsername(), us);
-               }
-            }
-         }
-         utx.commit();
          log.info("Initializing cache completed successfully");
       } catch (Exception e) {
          log.log(Level.SEVERE, "An exception occured while populating the datagrid! Rolling back the transaction. Aborting cache initialization.", e);
