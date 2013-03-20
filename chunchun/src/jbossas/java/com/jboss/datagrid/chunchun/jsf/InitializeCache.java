@@ -73,11 +73,10 @@ public class InitializeCache implements SystemEventListener {
    @Override
    public void processEvent(SystemEvent event) throws AbortProcessingException {
       provider = getContextualInstance(getBeanManagerFromJNDI(), CacheContainerProvider.class);
-      startup();
+      if (! Boolean.getBoolean("chunchun.cache.init.skip")) startup();
    }
 
    public void startup() {
-      if (Boolean.getBoolean("chunchun.cache.init.skip")) return;
       log.info("Initializing chunchun cache with " + USER_COUNT + " users, each with " + POSTS + " initial posts and " + USER_WATCHES_COUNT + " user watches");
 
       BasicCache<String, Object> users = provider.getCacheContainer().getCache("userCache");
