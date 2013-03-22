@@ -22,10 +22,14 @@
 package com.jboss.datagrid.chunchun.session;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.NavigableSet;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,6 +46,8 @@ import org.infinispan.api.BasicCache;
 
 import com.jboss.datagrid.chunchun.model.PostKey;
 import com.jboss.datagrid.chunchun.model.User;
+import com.jboss.datagrid.chunchun.util.PostKeyTimeComparator;
+import com.jboss.datagrid.chunchun.util.UserPostKeyIterator;
 
 /**
  * Handles post operations (sending posts, listing recent posts from all watched people,
@@ -56,36 +62,14 @@ public class PostBean implements Serializable {
 
    private static final long serialVersionUID = -8914061755188086355L;
 
-   private static final int INITIAL_POSTS_LIMIT = 30;
-   private int loadedPosts = INITIAL_POSTS_LIMIT;
-   // private static final int INCREASE_LOADED_BY = 50; //increase loadedPosts by
    private static final int INITIAL_SHOWED_POSTS = 10;
    private int showedPosts = INITIAL_SHOWED_POSTS;
    private static final int INCREASE_SHOWED_BY = 10; //increase showedPosts by
-   
-   private static final long MINUTE = 60 * 1000;
-   private static final long TEN_MINUTES = 10 * MINUTE;
-   private static final long THIRTY_MINUTES = 30 * MINUTE;
-   private static final long HOUR = 60 * MINUTE;
-   private static final long TWELVE_HOURS = 12 * HOUR;
-   private static final long DAY = 24 * HOUR;
-   private static final long THREE_DAYS = DAY * 3;
-   private static final long SEVEN_DAYS = DAY * 7;
-   
-   private static final long LOW_WATCH_LIMIT = 50;
-   private static final long MEDIUM_WATCH_LIMIT = 300;
-   private static final long HIGH_WATCH_LIMIT = 1000;
-
-   //shorten time steps with increasing number of people that I'm watching
-   private static long agesByNumOfWatched[][] = {
-            { DAY, THREE_DAYS, SEVEN_DAYS }, 
-            { HOUR, TWELVE_HOURS, DAY, THREE_DAYS, SEVEN_DAYS },
-            { MINUTE, THIRTY_MINUTES, HOUR, DAY, SEVEN_DAYS },
-            { MINUTE, TEN_MINUTES, THIRTY_MINUTES, TWELVE_HOURS, SEVEN_DAYS } };
 
    private String message;
 
    LinkedList<DisplayPost> recentPosts = new LinkedList<DisplayPost>();
+   transient private HashMap<PostKey, DisplayPost> recentPostsCache = new HashMap<PostKey, DisplayPost>();
 
    @Inject
    private Instance<Authenticator> auth;
@@ -144,71 +128,74 @@ public class PostBean implements Serializable {
    }
 
    public List<DisplayPost> getRecentPosts() {
-      if (recentPosts.size() <= INITIAL_POSTS_LIMIT) {
-          reloadPosts(INITIAL_POSTS_LIMIT);
+      if (recentPosts.size() < showedPosts) {
+          reloadPosts(showedPosts);
       }
-      if (showedPosts > loadedPosts) {
-          loadedPosts = showedPosts;
-          reloadPosts(loadedPosts);
-      }
-      return recentPosts.subList(0, showedPosts);
+      return recentPosts;
    }
-   
+
    /*
     * Reload content of recentPosts list
+    * 
     */
    private void reloadPosts(int limit) {
-       long now = System.currentTimeMillis();
-       List<String> following = auth.get().getUser().getWatching();
-       long[] ages = chooseRecentPostsStrategy(following.size());
-       //make sure we have an empty list before reloading, otherwise entries will be contained more than once
-       if (recentPosts.size() > 0) {
-          recentPosts.clear();
-       }
-       // add initial entry (oldest possible one)
-       recentPosts.add(new DisplayPost());
-       // first check only posts newer than 1 hour, then increase maxAge
-       for (int maxAge = 0; maxAge != ages.length; maxAge++) {
-          if (recentPosts.size() >= limit) {
-             break;
-          }
-          // get all people that I'm following
-          for (String username : following) {
-             User u = (User) getUserCache().get(username);
-             CopyOnWriteArrayList<PostKey> postKeys = (CopyOnWriteArrayList<PostKey>) u.getPosts();
-             LinkedList<PostKey> postKeysLinked = new LinkedList<PostKey>();
-             postKeysLinked.addAll(postKeys);
-             Iterator<PostKey> it = postKeysLinked.descendingIterator();
-             // go from newest to oldest post
-             while (it.hasNext()) {
-                PostKey key = it.next();
-                //check only desired sector in the past
-                if (maxAge > 0 && key.getTimeOfPost() >= (now - ages[maxAge - 1])) {
-                   // if we checked this post in the previous sector, move on
-                   continue;
-                } else if (key.getTimeOfPost() < (now - ages[maxAge])) {
-                   // if the post is older than what belongs to this sector, move on
-                   break;
-                }
-                int position = 0;
-                //possibly add the post to newest posts
-                for (DisplayPost recentPost : recentPosts) {
-                   if (key.getTimeOfPost() > recentPost.getTimeOfPost()) {
-                      Post t = (Post) getPostCache().get(key);
-                      if (t != null) {
-                         DisplayPost tw = new DisplayPost(u.getName(), u.getUsername(), t.getMessage(), t.getTimeOfPost());
-                         recentPosts.add(position, tw);
-                         if (recentPosts.size() > limit) {
-                            recentPosts.removeLast();
-                         }
-                      }
-                      break;
-                   }
-                   position++;
-                }
-             }
-          }
-       }
+      NavigableSet<PostKey> candidatePosts = new TreeSet<PostKey>(PostKeyTimeComparator.getInstance());
+      HashMap<String, User> following = new HashMap<String, User>();
+      // get a descending post iterator for each user
+      Set<Iterator<PostKey>> followingPostsIterators = new HashSet<Iterator<PostKey>>();
+      for (String username: auth.get().getUser().getWatching()) {
+         User user = (User) getUserCache().get(username);
+         following.put(username, user);
+         followingPostsIterators.add(new UserPostKeyIterator(user, provider));
+      }
+      // avoid NoSuchElementException in next loop condition
+      candidatePosts.add(new PostKey("dummy non existing username",0));
+      // check each user for recent enough post /that fit into limit of posts/, lookup in one day long intervals
+      long minAge = System.currentTimeMillis();
+      do {
+         minAge = minAge - (1000 * 60 * 60 * 24);
+         Iterator<Iterator<PostKey>> followingPostsIteratorsIterator = followingPostsIterators.iterator();
+         while (followingPostsIteratorsIterator.hasNext()) {
+            Iterator<PostKey> postIterator = followingPostsIteratorsIterator.next();
+            PostKey postKey;
+            boolean hasMorePosts;
+            while ( (hasMorePosts = postIterator.hasNext()) && ( !candidatePosts.first().getOwner().equals(postKey = postIterator.next() ) || candidatePosts.size() < limit) ) {
+               if (candidatePosts.size() < limit) {
+                  candidatePosts.add(postKey);
+               } else if (postKey.getTimeOfPost() > candidatePosts.first().getTimeOfPost()) {
+                  candidatePosts.pollFirst();
+                  candidatePosts.add(postKey);
+               } else {
+                  break;
+               }
+               if (postKey.getTimeOfPost() < minAge) break;
+            }
+            if (!hasMorePosts) followingPostsIteratorsIterator.remove();
+         }
+      } while (candidatePosts.size() < limit && followingPostsIterators.size() > 0);
+      followingPostsIterators = null; // lets be memory friendly
+      // remove artificial first element in the case there are not enough real posts to fill limit
+      if (candidatePosts.first().getTimeOfPost() == 0) candidatePosts.pollFirst();
+      // we have the postKey of all possible posts within the limit, handle them
+      HashMap<PostKey, DisplayPost> newPostsCache = new HashMap<PostKey, DisplayPost>();
+      Iterator<PostKey> postsToDisplayIterator = candidatePosts.descendingIterator();
+      recentPosts.clear();
+      while (postsToDisplayIterator.hasNext()) {
+         PostKey postKey = postsToDisplayIterator.next();
+         DisplayPost post;
+         Post rawPost;
+         if ((post = recentPostsCache.get(postKey)) != null) {
+            recentPosts.add(post);
+            newPostsCache.put(postKey, post);
+         } else if ((rawPost = (Post) getPostCache().get(postKey)) != null) {
+            post = new DisplayPost(following.get(postKey.getOwner()).getName(), postKey.getOwner(), rawPost.getMessage(), postKey.getTimeOfPost());
+            recentPosts.add(post);
+            newPostsCache.put(postKey, post);
+         } else {
+            // post might have been removed in the meanwhile so we just ignore
+         }
+      }
+      recentPostsCache = newPostsCache;
    }
 
    public void morePosts() {
@@ -221,18 +208,6 @@ public class PostBean implements Serializable {
    
    public int getDisplayedPostsLimit() {
        return showedPosts;   
-   }
-   
-   private long[] chooseRecentPostsStrategy(int size) {
-      if (size < LOW_WATCH_LIMIT) {
-         return agesByNumOfWatched[0];
-      } else if (size < MEDIUM_WATCH_LIMIT) {
-         return agesByNumOfWatched[1];
-      } else if (size < HIGH_WATCH_LIMIT) {
-         return agesByNumOfWatched[2];
-      } else {
-         return agesByNumOfWatched[3];
-      }
    }
 
    public List<DisplayPost> getMyPosts() {
@@ -280,8 +255,7 @@ public class PostBean implements Serializable {
    }
 
    public void resetRecentPosts() {
-      recentPosts = new LinkedList<DisplayPost>();
+      recentPosts.clear();
       showedPosts = INITIAL_SHOWED_POSTS;
-      loadedPosts = INITIAL_POSTS_LIMIT;
    }
 }
