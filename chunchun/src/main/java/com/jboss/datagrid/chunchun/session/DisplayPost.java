@@ -49,6 +49,8 @@ public class DisplayPost {
    
    private String message;
    
+   // TODO: store avatar reference as well, see User and UserBeen TODOs
+
    private long timeOfPost;
 
    public DisplayPost(String name, String username, String message, long timeOfPost) {

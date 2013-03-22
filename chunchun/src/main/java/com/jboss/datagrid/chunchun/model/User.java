@@ -43,8 +43,10 @@ public class User implements Serializable {
    
    private String whoami; // description of the person
    
+   // TODO: move avatar to a separate cache and leave only a reference here
    private byte[] avatar;
    
+   // TODO: move older pots to a separate cache, keep up to 30 posts in the User 
    private CopyOnWriteArrayList<PostKey> posts;
    
    private CopyOnWriteArrayList<String> watchers;

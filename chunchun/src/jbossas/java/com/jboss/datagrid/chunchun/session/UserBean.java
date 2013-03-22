@@ -70,7 +70,8 @@ public class UserBean implements Serializable {
 
    @Inject
    private UserTransaction utx;
-   
+
+   // TODO: make this method return avatar by reference instead of username, store avatar reference in DisplayPost
    public void showUserImage(OutputStream out, Object data) {
       try {
          User u = (User) getUserCache().get((String) data);
