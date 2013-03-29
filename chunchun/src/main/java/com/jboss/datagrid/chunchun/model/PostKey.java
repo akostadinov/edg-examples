@@ -82,4 +82,29 @@ public class PostKey implements Serializable {
          return false;
       return true;
    }
+
+   /*
+    * Converts object to string concatenating owner and timeOfPost with a dash.
+    * Useful for string mapping when jdbc cache store is used. Optimized for
+    * putting into a b-tree index I imagine.
+    *
+    */
+   public String toDBKeyString() {
+      // funky method to make up a random sorting index to help btrees but benefits are negligible if any
+      // String timestamp = String.format("%016X", Long.reverse(timeOfPost));
+      // return timestamp.substring(0, 4) + owner + timestamp.substring(4);
+
+      // mostly incrementing key
+      return Long.toString(timeOfPost, 16) + ":" + owner;
+   }
+
+   public static PostKey fromDBKeyString(String val) {
+      // restore from the funky method in toDBKeyString()
+      // long timestamp = Long.parseLong(val.substring(val.length() - 12), 16) |
+      //                      Long.parseLong(val.substring(0, 4), 16)<<48;
+      // return new PostKey(val.substring(4, val.length() - 12), Long.reverse(timestamp));
+
+      int indexOfSeparator = val.indexOf(":");
+      return new PostKey(val.substring(indexOfSeparator + 1), Long.parseLong(val.substring(0, indexOfSeparator), 16));
+   }
 }
