@@ -33,27 +33,26 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class User implements Serializable {
 
-   private static final long serialVersionUID = 188164481825309731L;
+   private static final long serialVersionUID = -4241432926471034653L;
 
    private String username; // unique identifier
 
    private String name;
-   
+
    private String password;
-   
+
    private String whoami; // description of the person
-   
-   // TODO: move avatar to a separate cache and leave only a reference here
-   private byte[] avatar;
-   
+
+   private String avatar;
+
    // TODO: move older pots to a separate cache, keep up to 30 posts in the User 
    private CopyOnWriteArrayList<PostKey> posts;
-   
+
    private CopyOnWriteArrayList<String> watchers;
-   
+
    private CopyOnWriteArrayList<String> watching;
 
-   public User(String username, String name, String surname, String password, String whoami, byte[] avatar) {
+   public User(String username, String name, String surname, String password, String whoami, String avatar) {
       this.username = username;
       this.name = name;
       this.password = password;
@@ -128,11 +127,11 @@ public class User implements Serializable {
       return watching;
    }
 
-   public byte[] getAvatar() {
+   public String getAvatar() {
       return avatar;
    }
 
-   public void setAvatar(byte[] avatar) {
+   public void setAvatar(String avatar) {
       this.avatar = avatar;
    }
 

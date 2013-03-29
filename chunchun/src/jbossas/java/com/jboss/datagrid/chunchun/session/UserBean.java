@@ -75,7 +75,7 @@ public class UserBean implements Serializable {
    public void showUserImage(OutputStream out, Object data) {
       try {
          User u = (User) getUserCache().get((String) data);
-         out.write(u.getAvatar());
+         out.write(getAvatarCache().get(u.getAvatar()));
       } catch (Exception e) {
          throw new RuntimeException("Unable to load data for image", e);
       }
@@ -115,6 +115,10 @@ public class UserBean implements Serializable {
 
    private BasicCache<String, Object> getUserCache() {
       return provider.getCacheContainer().getCache("userCache");
+   }
+
+   private BasicCache<String, byte[]> getAvatarCache() {
+      return provider.getCacheContainer().getCache("avatarCache");
    }
 
    public User getWatchedUser() {

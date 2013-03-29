@@ -81,6 +81,7 @@ public class InitializeCache implements SystemEventListener {
 
       BasicCache<String, Object> users = provider.getCacheContainer().getCache("userCache");
       BasicCache<PostKey, Object> posts = provider.getCacheContainer().getCache("postCache");
+      BasicCache<String, Object> avatars = provider.getCacheContainer().getCache("avatarCache");
 
       // try to avoid re-initializing cache if it exists
       if (users.get("user1") != null) {
@@ -91,17 +92,19 @@ public class InitializeCache implements SystemEventListener {
       utx = getUserTransactionFromJNDI();
 
       try {
+         // initialize avatars
+         utx.begin();
+         avatars.put("user1.jpg", loadImageFromFile("images" + File.separator + "user1.jpg"));
+         avatars.put("nophoto.jpg", loadImageFromFile("images" + File.separator + "nophoto.jpg"));
+         utx.commit();
+
+         // create users
          for (int i = 1; i <= USER_COUNT; i++) {
             utx.begin();
             User u = null;
             // if non-jpeg image needs to be used, make sure to tune a4j:mediaOutput mimeType, removing mimeType prop tested to work on FF18 and eclipse
-            if (i % 2 == 1) {
-               u = new User("user" + i, "Name" + i, "Surname" + i, "tmpPasswd",
-                        "Description of person " + i, loadImageFromFile("images" + File.separator + "user1.jpg"));
-            } else {
-               u = new User("user" + i, "Name" + i, "Surname" + i, "tmpPasswd",
-                        "Description of person " + i, loadImageFromFile("images" + File.separator + "nophoto.jpg"));
-            }
+            u = new User("user" + i, "Name" + i, "Surname" + i, "tmpPasswd",
+                  "Description of person " + i, i % 2 == 1 ? "user1.jpg" : "nophoto.jpg");
 
             String encryptedPass = hashPassword("pass" + i);
             u.setPassword(encryptedPass);
