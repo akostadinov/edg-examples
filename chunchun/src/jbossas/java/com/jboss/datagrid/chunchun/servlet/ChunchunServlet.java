@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -18,6 +20,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import com.jboss.datagrid.chunchun.session.PostBean;
 import com.jboss.datagrid.chunchun.session.UserBean;
 
@@ -36,6 +39,7 @@ import com.jboss.datagrid.chunchun.session.UserBean;
 public class ChunchunServlet extends HttpServlet {
 
    private static Map<Integer, Boolean> userMap = new HashMap<Integer, Boolean>();   //registered occupied users
+   private Logger                 log                        = Logger.getLogger(this.getClass().getName());
 
    static {
       for (int i = 1; i != InitializeCache.getUserCount(); i++) {
@@ -60,6 +64,7 @@ public class ChunchunServlet extends HttpServlet {
    }
 
    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws javax.servlet.ServletException, IOException {
+      long startTime = System.currentTimeMillis();
       String command = request.getParameter("command");
       String userParam = request.getParameter("user"); //in case we need to specify a user for an operation
       int displayLimitParam = 10; //in case we want to specify how many posts to display
@@ -113,12 +118,20 @@ public class ChunchunServlet extends HttpServlet {
 
       } else if ("newpost".equals(command)) {
 
-         //http://localhost:8080/chunchun/chunchunservlet?command=newpost
+         //http://localhost:8080/chunchun/chunchunservlet?command=newpost&num=1000
 
-         postBean.setMessage("New message from mgencur");
-         postBean.sendPost();
-         answer.append("\n").append("New post sent: " + postBean.getMessage());
+         int num = 1;
+         try {
+            num = Integer.parseInt(request.getParameter("num"));
+         } catch (NumberFormatException e) {
+            // do nothing, default value for num used
+         }
 
+         for (int i=1; i<=num ; i++) {
+            postBean.setMessage("New message from master at " + startTime + ", number:" + i);
+            postBean.sendPost();
+            answer.append("\n").append("New post sent: " + postBean.getMessage());
+         }
       } else if ("myposts".equals(command)) {
 
          //http://localhost:8080/chunchun/chunchunservlet?command=myposts
@@ -172,11 +185,12 @@ public class ChunchunServlet extends HttpServlet {
                userBean.stopWatchingUser(u);
             }
          }
-
       } else {
          answer.append("\n").append("Unknown command");
       }
 
+      long finishedTime = System.currentTimeMillis();
+      log.info("processing " + command + " took " + (finishedTime - startTime) + "msec");
 //      if( answer.toString().length() != 0) {
 //         response.setHeader("answer", answer.toString());
 //      }
