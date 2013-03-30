@@ -1,0 +1,9 @@
+yum install mysql-connector-java
+copy mysql jdbc driver to the module directory (i.e. cp /usr/share/java/mysql-connector-java.jar $JBOSS_HOME/modules/com/mysql/main/mysql-connector-java.jar)
+copy module directory under JBoss AS installation directory (e.g. /var/lib/jbossas)
+
+    ## deploy an example mysql datasource after starting the server through the cli interface ($JBOSS_HOME/bin/jboss-cli.sh)
+    data-source remove --name=MysqlDS
+    /subsystem=datasources/jdbc-driver=mysql:add(driver-name="mysql",driver-module-name="com.mysql",driver-xa-datasource-class-name=com.mysql.jdbc.jdbc2.optional.MysqlXADataSource)
+    data-source add --name=MysqlDS --connection-url="jdbc:mysql://${db.host}:3306/${db.database}" --jndi-name=java:jboss/datasources/MysqlDS --driver-name=mysql --user-name="${db.user}" --password="${db.passwd}"
+    /subsystem=datasources/data-source=MysqlDS:enable

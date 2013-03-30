@@ -1,0 +1,5 @@
+ls subsystem=datasources/data-source=ExampleDS/statistics=pool -l
+cd subsystem=datasources/data-source=ExampleDS/statistics=pool
+ls -l 
+
+ls subsystem=datasources/data-source=ExampleDS/statistics=jdbc -l

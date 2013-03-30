@@ -499,6 +499,64 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+                <id>bdbje</id>
+                <dependencies>
+                        <dependency>
+                                <groupId>org.infinispan</groupId>
+                                <artifactId>infinispan-cachestore-bdbje</artifactId>
+                                <version>${datagrid.version}</version>
+                                <scope>runtime</scope>
+                        </dependency>
+                </dependencies>
+                        <repositories>
+                                <repository>
+                                        <id>oracleReleases</id>
+                                        <name>Oracle Released Java Packages</name>
+                                        <url>http://download.oracle.com/maven</url>
+                                        <layout>default</layout>
+                                </repository>
+                        </repositories>
+        </profile>
+        <profile>
+                <id>jdbm</id>
+                <dependencies>
+                        <dependency>
+                                <groupId>org.infinispan</groupId>
+                                <artifactId>infinispan-cachestore-jdbm</artifactId>
+                                <version>${datagrid.version}</version>
+                                <scope>runtime</scope>
+                        </dependency>
+                </dependencies>
+        </profile>
+        <profile>
+                <id>sqlight</id>
+            <dependencies>
+                    <dependency>
+                    <groupId>org.xerial</groupId>
+                    <artifactId>sqlite-jdbc</artifactId>
+                    <version>3.7.2</version>
+                    <scope>runtime</scope>
+                </dependency>
+                        <dependency>
+                                <groupId>org.infinispan</groupId>
+                                <artifactId>infinispan-cachestore-jdbc</artifactId>
+                                <version>${datagrid.version}</version>
+                                <scope>runtime</scope>
+                        </dependency>
+                </dependencies>
+        </profile>
+        <profile>
+                <id>jdbc</id>
+            <dependencies>
+                        <dependency>
+                                <groupId>org.infinispan</groupId>
+                                <artifactId>infinispan-cachestore-jdbc</artifactId>
+                                <version>${datagrid.version}</version>
+                                <scope>runtime</scope>
+                        </dependency>
+                </dependencies>
+        </profile>
     </profiles>
 
 </project>
