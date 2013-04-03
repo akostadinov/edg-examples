@@ -64,6 +64,10 @@ public class ChunchunServlet extends HttpServlet {
    }
 
    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws javax.servlet.ServletException, IOException {
+      response.setHeader( "Pragma", "no-cache" );
+      response.setHeader( "Cache-Control", "no-cache" );
+      response.setDateHeader( "Expires", 0 );
+
       long startTime = System.currentTimeMillis();
       String command = request.getParameter("command");
       String userParam = request.getParameter("user"); //in case we need to specify a user for an operation
