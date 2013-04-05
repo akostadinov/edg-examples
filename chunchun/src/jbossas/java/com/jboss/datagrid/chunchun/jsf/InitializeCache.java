@@ -58,7 +58,7 @@ import javax.enterprise.inject.spi.BeanManager;
  *
  */
 public class InitializeCache implements SystemEventListener {
-   public  static final  String   VERSION                    = "1.0.15";
+   public  static final  String   VERSION                    = "1.0.19";
 
    private static final int       USER_COUNT                 = Integer.getInteger("chunchun.cache.init.users", 3000);
    private static final int       SEVEN_DAYS_IN_MILLISECONDS = 7 * 24 * 3600 * 1000;
@@ -132,20 +132,15 @@ public class InitializeCache implements SystemEventListener {
          // USER_MUTUAL_WATCHES_PERCENT is only a target but can end up higher or lower
          // to remove possibilities of fluctuations in number of watching, then set USER_MUTUAL_WATCHES_PERCENT to 0
          for (int i = 1; i <= USER_COUNT; i++) {
-            int selfBalance; // balance mutual watches in one pass by magic number 
-            if (USER_MUTUAL_WATCHES_PERCENT == 0)
-               selfBalance = 0;
-            else {
-               final int maxSelfBalance = USER_WATCHES_COUNT * USER_MUTUAL_WATCHES_PERCENT / 3 / 100;
-               final int groups = maxSelfBalance;
-               selfBalance = (int) (maxSelfBalance - (long) i * (groups + 1) / (USER_COUNT + 1));
-            }
-
             utx.begin();
             int nonMutualWatching = 0;
             User u = (User) users.get("user" + i);
-            while (u.getWatching().size() < USER_WATCHES_COUNT - selfBalance) {
-               int id = randomNumber.nextInt(USER_COUNT) + 1; // do not return 0
+            while (u.getWatching().size() < USER_WATCHES_COUNT) {
+               int id;
+               if (USER_WATCHES_COUNT - u.getWatching().size() < (USER_COUNT - i) / 3)
+                  id = randomNumber.nextInt(USER_COUNT - i) + 1 + i; // do not return 0 and return only users with greater id
+               else 
+                  id = randomNumber.nextInt(USER_COUNT) + 1; // do not return 0;
                User watching = (User) users.get("user" + id);
 
                if (  watching == null ||
@@ -153,7 +148,7 @@ public class InitializeCache implements SystemEventListener {
                      u.getWatching().contains(watching.getUsername())
                      ) continue;
 
-               if ((u.getWatching().size() + selfBalance - nonMutualWatching) * 100l < (long) USER_WATCHES_COUNT * USER_MUTUAL_WATCHES_PERCENT) {
+               if ((u.getWatching().size() - nonMutualWatching) * 100l < (long) USER_WATCHES_COUNT * USER_MUTUAL_WATCHES_PERCENT) {
                   if (watching.getWatching().size() >= USER_WATCHES_COUNT) {
                      nonMutualWatching++;
                   } else {
