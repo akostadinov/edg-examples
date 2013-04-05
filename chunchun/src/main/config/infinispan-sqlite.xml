@@ -245,10 +245,11 @@
 
          <stringKeyedJdbcStore xmlns="urn:infinispan:config:jdbc:5.2" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false" key2StringMapper="com.jboss.datagrid.chunchun.util.TwoWayKey2StringChunchunMapper">
             <dataSource jndiUrl="java:jboss/datasources/SQLiteDS" />
-            <stringKeyedTable dropOnExit="false" createOnStart="true" prefix="ISPN_STRING_TABLE">
-               <idColumn name="ID_COLUMN" type="VARCHAR(255)" />
-               <dataColumn name="DATA_COLUMN" type="BINARY" />
-               <timestampColumn name="TIMESTAMP_COLUMN" type="BIGINT" />
+            <!-- for datatypes/affinity see http://www.sqlite.org/datatype3.html -->
+            <stringKeyedTable dropOnExit="false" createOnStart="true" prefix="ispn">
+               <idColumn name="ID_COLUMN" type="VARCHAR" /> <!--  affinity TEXT -->
+               <dataColumn name="DATA_COLUMN" type="BLOB" /> <!--  affinity NONE -->
+               <timestampColumn name="TIMESTAMP_COLUMN" type="BIGINT" /> <!--  affinity INTEGER -->
             </stringKeyedTable>
          </stringKeyedJdbcStore>
       </loaders>

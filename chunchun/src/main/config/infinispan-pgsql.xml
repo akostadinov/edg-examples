@@ -245,10 +245,10 @@
 
          <stringKeyedJdbcStore xmlns="urn:infinispan:config:jdbc:5.2" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false" key2StringMapper="com.jboss.datagrid.chunchun.util.TwoWayKey2StringChunchunMapper">
             <async enabled="${chunchun.async.store:false}"/>
-            <dataSource jndiUrl="java:jboss/datasources/MysqlDS" />
+            <dataSource jndiUrl="java:jboss/datasources/PgsqlDS" />
             <stringKeyedTable dropOnExit="false" createOnStart="true" prefix="ispn">
-               <idColumn name="entry_key" type="VARCHAR(50)"/>
-               <dataColumn name="data" type="varbinary(65400)" />
+               <idColumn name="entry_key" type="VARCHAR(150)"/>
+               <dataColumn name="data" type="bytea" />
                <timestampColumn name="timestamp" type="BIGINT" />
             </stringKeyedTable>
          </stringKeyedJdbcStore>

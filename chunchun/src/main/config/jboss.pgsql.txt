@@ -1,0 +1,9 @@
+yum install postgresql-jdbc
+copy pgsql jdbc driver to the module directory (i.e. cp /usr/share/java/postgresql-jdbc.jar $JBOSS_HOME/modules/org/postgresql/main/)
+copy module directory under JBoss AS installation directory (e.g. /var/lib/jbossas)
+
+    ## deploy an example mysql datasource after starting the server through the cli interface ($JBOSS_HOME/bin/jboss-cli.sh)
+    data-source remove --name=PgsqlDS
+    /subsystem=datasources/jdbc-driver=pgsql:add(driver-name="pgsql",driver-module-name="org.postgresql",driver-xa-datasource-class-name=org.postgresql.xa.PGXADataSource)
+    data-source add --name=PgsqlDS --connection-url="jdbc:postgresql://${db.host}:5432/${db.database}" --jndi-name=java:jboss/datasources/PgsqlDS --driver-name=pgsql --user-name="${db.user}" --password="${db.passwd}"
+    /subsystem=datasources/data-source=PgsqlDS:enable
