@@ -30,9 +30,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,10 +58,12 @@ import javax.enterprise.inject.spi.BeanManager;
  *
  */
 public class InitializeCache implements SystemEventListener {
+   public  static final  String   VERSION                    = "1.0.15";
 
    private static final int       USER_COUNT                 = Integer.getInteger("chunchun.cache.init.users", 3000);
    private static final int       SEVEN_DAYS_IN_MILLISECONDS = 7 * 24 * 3600 * 1000;
    private static final int       USER_WATCHES_COUNT         = Integer.getInteger("chunchun.cache.init.watches",20);
+   private static final int       USER_MUTUAL_WATCHES_PERCENT = Integer.getInteger("chunchun.cache.init.mutual.watches.percent",95);
    private static final int       POSTS                      = Integer.getInteger("chunchun.cache.init.posts",20);
    private Random                 randomNumber               = new Random();
    private Logger                 log                        = Logger.getLogger(this.getClass().getName());
@@ -77,7 +77,7 @@ public class InitializeCache implements SystemEventListener {
    }
 
    public void startup() {
-      log.info("Initializing chunchun cache with " + USER_COUNT + " users, each with " + POSTS + " initial posts and " + USER_WATCHES_COUNT + " user watches");
+      log.info("Initializing chunchun cache with " + USER_COUNT + " users, each with " + POSTS + " initial posts and " + USER_WATCHES_COUNT + " user watches, version: " + VERSION);
 
       BasicCache<String, Object> users = provider.getCacheContainer().getCache("userCache");
       BasicCache<PostKey, Object> posts = provider.getCacheContainer().getCache("postCache");
@@ -129,15 +129,42 @@ public class InitializeCache implements SystemEventListener {
          }
 
          // GENERATE RANDOM WATCHERS AND WATCHING FOR EACH USER
+         // USER_MUTUAL_WATCHES_PERCENT is only a target but can end up higher or lower
+         // to remove possibilities of fluctuations in number of watching, then set USER_MUTUAL_WATCHES_PERCENT to 0
          for (int i = 1; i <= USER_COUNT; i++) {
+            int selfBalance; // balance mutual watches in one pass by magic number 
+            if (USER_MUTUAL_WATCHES_PERCENT == 0)
+               selfBalance = 0;
+            else {
+               final int maxSelfBalance = USER_WATCHES_COUNT * USER_MUTUAL_WATCHES_PERCENT / 3 / 100;
+               final int groups = maxSelfBalance;
+               selfBalance = (int) (maxSelfBalance - (long) i * (groups + 1) / (USER_COUNT + 1));
+            }
+
             utx.begin();
+            int nonMutualWatching = 0;
             User u = (User) users.get("user" + i);
-            for (User watching : generateRandomUsers(u, USER_WATCHES_COUNT, USER_COUNT)) {
-               if (!u.getUsername().equals(watching.getUsername())) {
-                  u.addFollowing(watching.getUsername());
-                  watching.addFollower(u.getUsername());
-                  users.replace(watching.getUsername(),watching);
+            while (u.getWatching().size() < USER_WATCHES_COUNT - selfBalance) {
+               int id = randomNumber.nextInt(USER_COUNT) + 1; // do not return 0
+               User watching = (User) users.get("user" + id);
+
+               if (  watching == null ||
+                     u.getUsername().equals(watching.getUsername()) ||
+                     u.getWatching().contains(watching.getUsername())
+                     ) continue;
+
+               if ((u.getWatching().size() + selfBalance - nonMutualWatching) * 100l < (long) USER_WATCHES_COUNT * USER_MUTUAL_WATCHES_PERCENT) {
+                  if (watching.getWatching().size() >= USER_WATCHES_COUNT) {
+                     nonMutualWatching++;
+                  } else {
+                     // mutual watcher
+                     u.addFollower(watching.getUsername());
+                     watching.addFollowing(u.getUsername());
+                  }
                }
+               u.addFollowing(watching.getUsername());
+               watching.addFollower(u.getUsername());
+               users.replace(watching.getUsername(),watching);
             }
             users.replace(u.getUsername(), u);
             utx.commit();
@@ -178,20 +205,6 @@ public class InitializeCache implements SystemEventListener {
                - randomNumber.nextInt(SEVEN_DAYS_IN_MILLISECONDS);
    }
 
-   private Set<User> generateRandomUsers(User forWhom, int count, int outOf) {
-      BasicCache<String, Object> users = provider.getCacheContainer().getCache("userCache");
-      Random r = new Random(getRandomTime());
-      Set<User> result = new HashSet<User>();
-      while (result.size() < count) {
-         int id = (r.nextInt(outOf - 1)) + 1; // do not return 0
-         User u = (User) users.get("user" + id);
-         if (u != null && u.equals(forWhom))
-            continue;
-         result.add(u);
-      }
-      return result;
-   }
-
    public static String hashPassword(String password) {
       String hashword = null;
       try {
@@ -209,6 +222,18 @@ public class InitializeCache implements SystemEventListener {
       return USER_COUNT;
    }
    
+   public static int getUserWatchesCount() {
+      return USER_WATCHES_COUNT;
+   }
+
+   public static int getUserMutualWatchesPercent() {
+      return USER_MUTUAL_WATCHES_PERCENT;
+   }
+
+   public static int getPosts() {
+      return POSTS;
+   }
+
    private BeanManager getBeanManagerFromJNDI() {
       InitialContext context;
       Object result;
