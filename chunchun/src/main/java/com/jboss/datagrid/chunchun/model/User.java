@@ -22,6 +22,7 @@
 package com.jboss.datagrid.chunchun.model;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -64,7 +65,9 @@ public class User implements Serializable {
    }
 
    public void addFollower(String user) {
-      this.watchers.add(user);
+      if (! this.watchers.contains(user) && ! getUsername().equals(user)) {
+         this.watchers.add(user);
+      }
    }
 
    public void removeFollower(String user) {
@@ -72,7 +75,9 @@ public class User implements Serializable {
    }
 
    public void addFollowing(String user) {
-      this.watching.add(user);
+      if (! this.watching.contains(user) && ! getUsername().equals(user)) {
+         this.watching.add(user);
+      }
    }
 
    public void removeFollowing(String user) {
@@ -135,4 +140,12 @@ public class User implements Serializable {
       this.avatar = avatar;
    }
 
+   public boolean containedIn(Iterator<User> iterator) {
+      boolean contained = false;
+      while(iterator.hasNext() & ! contained) {
+         User user = iterator.next();
+         contained = getUsername().equals(user.getUsername());
+      }
+      return contained;
+   }
 }
