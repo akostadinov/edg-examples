@@ -12,4 +12,5 @@ copy module directory under JBoss AS installation directory (e.g. /var/lib/jboss
     data-source remove --name=SQLiteDS
     /subsystem=datasources/jdbc-driver=sqlite:add(driver-name="sqlite",driver-module-name="org.xerial",driver-class-name=org.sqlite.JDBC)
     data-source add --name=SQLiteDS --connection-url="jdbc:sqlite:${db.database}" --jndi-name=java:jboss/datasources/SQLiteDS --driver-name="sqlite"
+    /subsystem=datasources/data-source=SQLiteDS/connection-properties=journal_mode:add(value="WAL")
     /subsystem=datasources/data-source=SQLiteDS:enable
