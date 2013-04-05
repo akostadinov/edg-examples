@@ -3,9 +3,12 @@ package com.jboss.datagrid.chunchun.servlet;
 import com.jboss.datagrid.chunchun.jsf.InitializeCache;
 import com.jboss.datagrid.chunchun.model.User;
 import com.jboss.datagrid.chunchun.session.Authenticator;
+import com.jboss.datagrid.chunchun.session.CacheContainerProvider;
 import com.jboss.datagrid.chunchun.session.DisplayPost;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +23,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.infinispan.api.BasicCache;
 
 import com.jboss.datagrid.chunchun.session.PostBean;
 import com.jboss.datagrid.chunchun.session.UserBean;
@@ -189,6 +194,54 @@ public class ChunchunServlet extends HttpServlet {
                userBean.stopWatchingUser(u);
             }
          }
+      } else if ("userstats".equals(command)) {
+
+         //http://localhost:8080/chunchun/chunchunservlet?command=userstats
+         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+         answer.append("Output version: 1.0.14" + " at: " + sdf. format(Calendar.getInstance().getTime()) + System.lineSeparator());
+
+         int moreWatches = 0;
+         int lessWatches = 0;
+         int moreMutualWatches = 0;
+         int lessMutualWatches = 0;
+         int watchSelf = 0;
+
+         for (int index = 1; index <= InitializeCache.getUserCount(); index++) {
+            String curUser = "user" + index;
+            User uCurUser = (User) getUserCache().get(curUser);
+            List<String> watching = uCurUser.getWatching();
+            if (watching.size() > InitializeCache.getUserWatchesCount()) {
+               moreWatches++;
+            } else if (watching.size() < InitializeCache.getUserWatchesCount()) {
+               lessWatches++;
+            }
+
+            if (watching.contains(curUser)) watchSelf++;
+
+            int mutualWatches = 0;
+            for (String user: watching) {
+               if (getUserCache().get(user).getWatching().contains(curUser)) {
+                  mutualWatches++;
+               }
+            }
+            final long mutualWatchesAnticipated = (long) InitializeCache.getUserMutualWatchesPercent() * InitializeCache.getUserWatchesCount();
+            if (mutualWatches * 100l < mutualWatchesAnticipated) {
+               lessMutualWatches++;
+            } else if (mutualWatches * 100l - 1l >= mutualWatchesAnticipated) {
+               moreMutualWatches++;
+            }
+            answer.append("\n").append(curUser + " mutual watched: " + mutualWatches);
+         }
+
+         answer.append("\n").append("Total users: " + InitializeCache.getUserCount());
+         answer.append("\n").append("Anticipated user watches: " + InitializeCache.getUserWatchesCount());
+         answer.append("\n").append("User target mutual watches percent: " + InitializeCache.getUserMutualWatchesPercent() + "%");
+         answer.append("\n").append("User target mutual watches (x100): " + (long) InitializeCache.getUserMutualWatchesPercent() * InitializeCache.getUserWatchesCount());
+         answer.append("\n").append("Users with less watched users than anticipated: " + lessWatches);
+         answer.append("\n").append("Users with more watched users than anticipated: " + moreWatches);
+         answer.append("\n").append("Users with less mutual watched than anticipated: " + lessMutualWatches);
+         answer.append("\n").append("Users with more mutual watched than anticipated: " + moreMutualWatches);
+         answer.append("\n").append("Users watching themeslves: " + watchSelf);
       } else {
          answer.append("\n").append("Unknown command");
       }
@@ -216,6 +269,15 @@ public class ChunchunServlet extends HttpServlet {
    private UserBean getUserBean() {
       UserBean userBean = getContextualInstance(getBeanManagerFromJNDI(), UserBean.class);
       return userBean;
+   }
+
+   private CacheContainerProvider getCacheProvider() {
+      CacheContainerProvider provider = getContextualInstance(getBeanManagerFromJNDI(), CacheContainerProvider.class);
+      return provider;
+   }
+
+   private BasicCache<String, User> getUserCache() {
+      return getCacheProvider().getCacheContainer().getCache("userCache");
    }
 
    private BeanManager getBeanManagerFromJNDI() {
