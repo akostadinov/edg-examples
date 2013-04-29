@@ -1,0 +1,872 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="chunchun" enabled="true">
+      <stringProp name="TestPlan.comments">chunchun distributer performance/stress test</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="target.hostname" elementType="Argument">
+            <stringProp name="Argument.name">target.hostname</stringProp>
+            <stringProp name="Argument.value">${__property(chunchun.server,,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="target.port" elementType="Argument">
+            <stringProp name="Argument.name">target.port</stringProp>
+            <stringProp name="Argument.value">${__property(chunchun.server.port,,8080)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="target.path" elementType="Argument">
+            <stringProp name="Argument.name">target.path</stringProp>
+            <stringProp name="Argument.value">/chunchun</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="test.duration.sec" elementType="Argument">
+            <stringProp name="Argument.name">test.duration.sec</stringProp>
+            <stringProp name="Argument.value">${__javaScript(60 * 60 * 24)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="count.total.users" elementType="Argument">
+            <stringProp name="Argument.name">count.total.users</stringProp>
+            <stringProp name="Argument.value">3000</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="count.load.servers" elementType="Argument">
+            <stringProp name="Argument.name">count.load.servers</stringProp>
+            <stringProp name="Argument.value">${__property(load.servers.count,,1)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="num.of.this.load.server" elementType="Argument">
+            <stringProp name="Argument.name">num.of.this.load.server</stringProp>
+            <stringProp name="Argument.value">${__property(this.load.server.num,,1)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="count.threads.per.server" elementType="Argument">
+            <stringProp name="Argument.name">count.threads.per.server</stringProp>
+            <stringProp name="Argument.value">500</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="user.period.between.interactions.millis" elementType="Argument">
+            <stringProp name="Argument.name">user.period.between.interactions.millis</stringProp>
+            <stringProp name="Argument.value">300000</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="posts.per.day" elementType="Argument">
+            <stringProp name="Argument.name">posts.per.day</stringProp>
+            <stringProp name="Argument.value">3</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${target.hostname}</stringProp>
+        <stringProp name="HTTPSampler.port">${target.port}</stringProp>
+        <stringProp name="HTTPSampler.connect_timeout">10000</stringProp>
+        <stringProp name="HTTPSampler.response_timeout">20000</stringProp>
+        <stringProp name="HTTPSampler.protocol"></stringProp>
+        <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+        <stringProp name="HTTPSampler.path"></stringProp>
+        <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        <stringProp name="HTTPSampler.concurrentPool">4</stringProp>
+      </ConfigTestElement>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="users on ${__machineName()}" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">startnextloop</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${count.threads.per.server}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__javaScript(${user.period.between.interactions.millis}/1000)}</stringProp>
+        <longProp name="ThreadGroup.start_time">1315067496000</longProp>
+        <longProp name="ThreadGroup.end_time">1315218016000</longProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${test.duration.sec}</stringProp>
+        <stringProp name="ThreadGroup.delay">3</stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="iterations counter" enabled="true">
+          <stringProp name="CounterConfig.start">0</stringProp>
+          <stringProp name="CounterConfig.end"></stringProp>
+          <stringProp name="CounterConfig.incr">1</stringProp>
+          <stringProp name="CounterConfig.name">user.iterations</stringProp>
+          <stringProp name="CounterConfig.format"></stringProp>
+          <boolProp name="CounterConfig.per_user">true</boolProp>
+        </CounterConfig>
+        <hashTree/>
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+          <collectionProp name="CookieManager.cookies"/>
+          <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+        </CookieManager>
+        <hashTree/>
+        <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="jsfViewState" enabled="true">
+          <stringProp name="RegexExtractor.useHeaders">unescaped</stringProp>
+          <stringProp name="RegexExtractor.refname">jsfViewState</stringProp>
+          <stringProp name="RegexExtractor.regex">&lt;input.* id=&quot;javax\.faces\.ViewState&quot;.* value=&quot;([^&quot;]+)&quot;.* /&gt;</stringProp>
+          <stringProp name="RegexExtractor.template">$1$</stringProp>
+          <stringProp name="RegexExtractor.default"></stringProp>
+          <stringProp name="RegexExtractor.match_number">1</stringProp>
+          <stringProp name="TestPlan.comments">extract jsf view state id</stringProp>
+          <stringProp name="Scope.variable">${__BeanShell(return SampleResult.getResponseData())}</stringProp>
+        </RegexExtractor>
+        <hashTree/>
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="initialize environment before test" enabled="true"/>
+        <hashTree>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="dummy sampler" enabled="true">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor" enabled="true">
+              <stringProp name="scriptLanguage">beanshell</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">initialize.environment.once.before.run</stringProp>
+              <stringProp name="script">// log.info(&quot;######################################### RUNNINING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!&quot;);
+
+periodBetweenRuns = vars.get(&quot;user.period.between.interactions.millis&quot;);
+vars.putObject(&quot;user.period.between.interactions.millis.int&quot;, new Integer(periodBetweenRuns));
+
+// make sure these vars exist and avoid type checking later on
+vars.putObject(&quot;next.schedule&quot;, new Long(System.nanoTime()));
+vars.putObject(&quot;latest.user.posts&quot;, new HashMap()); // latest post of each user in visible recent posts
+vars.putObject(&quot;user.last.post&quot;, Integer.valueOf(-1)); // last post of current user
+vars.putObject(&quot;postPattern&quot;, java.util.regex.Pattern.compile(&quot;Post number ([0-9]+) for user Name([0-9]+) at .*&quot;));</stringProp>
+            </JSR223PreProcessor>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <TestAction guiclass="TestActionGui" testclass="TestAction" testname="setup execution context" enabled="true">
+          <intProp name="ActionProcessor.action">1</intProp>
+          <intProp name="ActionProcessor.target">0</intProp>
+          <stringProp name="ActionProcessor.duration">${millisec.sleep.timer}</stringProp>
+        </TestAction>
+        <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="setup (jsr223)" enabled="true">
+            <stringProp name="cacheKey">execution.per.thread.setup</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">// actual setup operations
+
+// HOW TO SET COOKIES
+// http://jmeter.512774.n5.nabble.com/possible-to-set-cookie-by-beanshell-td521490.html
+
+//
+// user name to use in this iteration
+//
+if (vars.get(&quot;username&quot;) == null) {
+   usernum=ctx.getThread().getThreadNum() + 1;
+   vars.put(&quot;username&quot;, &quot;user&quot; + usernum);
+   vars.put(&quot;password&quot;, &quot;pass&quot; + usernum);
+}
+
+//
+// atm must work as the constant throughput timer
+//
+long now=System.nanoTime();
+long nextOperation = vars.getObject(&quot;next.schedule&quot;).longValue(); // initialized by &quot;initialize environment before test&quot;
+long timeToSleepNow = (nextOperation - now) / 1000000;
+if (timeToSleepNow &lt; 0l) timeToSleepNow = 0;
+
+vars.put(&quot;millisec.sleep.timer&quot;, Long.toString(timeToSleepNow));
+vars.putObject(&quot;next.schedule&quot;, new Long(nextOperation + 1000000l * vars.getObject(&quot;user.period.between.interactions.millis.int&quot;).intValue()));</stringProp>
+            <stringProp name="scriptLanguage">beanshell</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+        </hashTree>
+        <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="read recent posts" enabled="true">
+          <collectionProp name="ModuleController.node_path">
+            <stringProp name="-1227702913">WorkBench</stringProp>
+            <stringProp name="2004884604">chunchun</stringProp>
+            <stringProp name="-83846807">read posts scenario Fragment</stringProp>
+          </collectionProp>
+          <stringProp name="TestPlan.comments">get recent posts and login if necessary</stringProp>
+        </ModuleController>
+        <hashTree/>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="is it time to chirp" enabled="true">
+          <stringProp name="IfController.condition">min=0; max=1000 * 60 * 60 * 24 / ${user.period.between.interactions.millis}; ${posts.per.day} &gt; Math.random() * (max - min) + min;</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+        </IfController>
+        <hashTree>
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="chirp" enabled="true">
+            <collectionProp name="ModuleController.node_path">
+              <stringProp name="-1227702913">WorkBench</stringProp>
+              <stringProp name="2004884604">chunchun</stringProp>
+              <stringProp name="-1173992754">chirp fragment</stringProp>
+            </collectionProp>
+          </ModuleController>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <TestFragmentController guiclass="TestFragmentControllerGui" testclass="TestFragmentController" testname="read posts scenario Fragment" enabled="true"/>
+      <hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="login if needed" enabled="true">
+          <stringProp name="IfController.condition">&quot;${logged.in}&quot; != &quot;true&quot;</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+        </IfController>
+        <hashTree>
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="login" enabled="true">
+            <collectionProp name="ModuleController.node_path">
+              <stringProp name="-1227702913">WorkBench</stringProp>
+              <stringProp name="2004884604">chunchun</stringProp>
+              <stringProp name="-1062345401">Login fragment</stringProp>
+            </collectionProp>
+          </ModuleController>
+          <hashTree/>
+        </hashTree>
+        <SwitchController guiclass="SwitchControllerGui" testclass="SwitchController" testname="read recent posts" enabled="true">
+          <stringProp name="SwitchController.value">${refresh.recent.posts}</stringProp>
+        </SwitchController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET recent posts" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain"></stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">${target.path}/recentposts.jsf</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <boolProp name="HTTPSampler.monitor">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="set refresh status" enabled="true">
+              <stringProp name="scriptLanguage">beanshell</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">recent/posts/set/refresh/status</stringProp>
+              <stringProp name="script">vars.put(&quot;refresh.recent.posts&quot;, &quot;1&quot;);</stringProp>
+            </JSR223Assertion>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="refresh recent posts" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="tForm" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.name">tForm</stringProp>
+                  <stringProp name="Argument.value">tForm</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+                <elementProp name="tForm:message" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.name">tForm:message</stringProp>
+                  <stringProp name="Argument.value"></stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+                <elementProp name="javax.faces.ViewState" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.name">javax.faces.ViewState</stringProp>
+                  <stringProp name="Argument.value">${jsfViewState}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+                <elementProp name="tForm:refresh" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.name">tForm:refresh</stringProp>
+                  <stringProp name="Argument.value">tForm:refresh</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">localhost</stringProp>
+            <stringProp name="HTTPSampler.port">8080</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="HTTPSampler.protocol">http</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+            <stringProp name="HTTPSampler.path">${target.path}/recentposts.jsf</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <boolProp name="HTTPSampler.monitor">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+          <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="extract recent posts from page" enabled="true">
+            <stringProp name="TestPlan.comments">return visible watched users&apos; posts</stringProp>
+            <stringProp name="XPathExtractor.default"></stringProp>
+            <stringProp name="XPathExtractor.refname">recentPosts</stringProp>
+            <stringProp name="XPathExtractor.xpathQuery">//div[@class=&quot;rf-p-b&quot;]//*[text()!=&apos;&apos;]</stringProp>
+            <boolProp name="XPathExtractor.validate">false</boolProp>
+            <boolProp name="XPathExtractor.tolerant">true</boolProp>
+            <boolProp name="XPathExtractor.namespace">false</boolProp>
+          </XPathExtractor>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="validate recent posts" enabled="true">
+            <stringProp name="scriptLanguage">beanshell</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">userposts/JSR223/validation</stringProp>
+            <stringProp name="script">boolean valid = ! SampleResult.getResponseDataAsString().isEmpty() &amp;&amp; SampleResult.isResponseCodeOK();
+if (! valid) {
+   AssertionResult.setFailure(true);
+   AssertionResult.setFailureMessage(&quot;content of recent posts does not look valid&quot;);
+   SampleResult.setStartNextThreadLoop(true); // tell thread to start next loop
+   vars.put(&quot;logged.in&quot;, &quot;false&quot;); // TODO: make sure the problem is expired session
+   return;
+}
+
+//
+// Make sure each new post numbers are not skipped (no lost posts)
+//
+String errMsg = &quot;&quot;;
+Map visibleLatestPosts = new HashMap();
+Map latestPosts = vars.getObject(&quot;latest.user.posts&quot;);
+java.util.regex.Pattern postPattern = vars.getObject(&quot;postPattern&quot;);
+matchesCount=1;
+// get latest visible posts for each user
+while ( (post = vars.get(&quot;recentPosts_&quot; + matchesCount++)) != null ) {
+   // log.info(post); // Post number 19 for user Name1523 at Tue Apr 09 20:43:21 EEST 2013
+
+   matcher = postPattern.matcher(post);
+   if (matcher.matches()) {
+      int user = Integer.parseInt(matcher.group(2));
+      int postnum = Integer.parseInt(matcher.group(1));
+      curPosts = visibleLatestPosts.get(user);
+      if (curPosts == void || curPosts == null) {
+         curPosts = new TreeSet();
+         visibleLatestPosts.put(user, curPosts);
+      }
+      curPosts.add(postnum);
+   } else {
+      errMsg = errMsg + &quot;unparsable post for user&quot; + user + &quot;: &quot; + post + &quot;, &quot;;
+   }
+}
+// check latest visible posts with what we saw last time
+for ( entry: visibleLatestPosts.entrySet()) {
+   int user = entry.getKey();
+   curPosts = entry.getValue();
+   lastPost = latestPosts.get(user);
+
+   if (lastPost == void || lastPost == null) {
+      latestPosts.put(user, curPosts.last());
+   } else if ( lastPost == curPosts.last() ) {
+      // do nothing, no new post from user
+   } else if (lastPost &gt; curPosts.last() ) {
+      // a user post has disappeared?
+      errMsg = errMsg + &quot;missing post for user&quot; + user + &quot;: post &quot; + lastPost + &quot; is missing, &quot;;
+   } else if (lastPost &lt; curPosts.last() ) {
+      boolean sequential = true;
+      for ( int i=lastPost + 1; i&lt;=curPosts.last(); i++ ) {
+         if (! curPosts.contains(i)) {
+            sequential = false;
+            break;
+         }
+      }
+      if (sequential) {
+         latestPosts.put(user, curPosts.last());
+      } else {
+         // TODO: do not threat an invisible post as missing
+         errMsg = errMsg + &quot;missing post for user&quot; + user + &quot;: between posts &quot; + lastPost + &quot; and &quot; +curPosts.last() + &quot;, &quot;;
+      }
+   }
+}
+
+if (! errMsg.equals(&quot;&quot;)) {
+   AssertionResult.setFailure(true);
+   AssertionResult.setFailureMessage(errMsg);
+   // SampleResult.setStartNextThreadLoop(true); // tell thread to start next loop
+   // vars.put(&quot;logged.in&quot;, &quot;false&quot;); // TODO: make sure the problem is expired session
+   // return;
+}</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+        </hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="fake wait 1 second sampler" enabled="false">
+          <stringProp name="scriptLanguage">beanshell</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">wait.1.second.sampler</stringProp>
+          <stringProp name="script">Thread.sleep(1002);</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+      </hashTree>
+      <TestFragmentController guiclass="TestFragmentControllerGui" testclass="TestFragmentController" testname="Login fragment" enabled="true"/>
+      <hashTree>
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="login transaction" enabled="true">
+          <boolProp name="TransactionController.parent">true</boolProp>
+          <boolProp name="TransactionController.includeTimers">false</boolProp>
+        </TransactionController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="request login form" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain"></stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">${target.path}/login.jsf</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <boolProp name="HTTPSampler.monitor">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="Accept-Language" elementType="Header">
+                  <stringProp name="Header.name">Accept-Language</stringProp>
+                  <stringProp name="Header.value">en-us;q=0.750</stringProp>
+                </elementProp>
+                <elementProp name="Accept" elementType="Header">
+                  <stringProp name="Header.name">Accept</stringProp>
+                  <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</stringProp>
+                </elementProp>
+                <elementProp name="User-Agent" elementType="Header">
+                  <stringProp name="Header.name">User-Agent</stringProp>
+                  <stringProp name="Header.value">Mozilla/5.0 (X11; Linux) AppleWebKit/537.6 (KHTML, like Gecko) Chrome/18.0.1025.133 Safari/537.6 Midori/0.4</stringProp>
+                </elementProp>
+                <elementProp name="Accept-Encoding" elementType="Header">
+                  <stringProp name="Header.name">Accept-Encoding</stringProp>
+                  <stringProp name="Header.value">gzip, deflate</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="JSR223 PostProcessor" enabled="false">
+              <stringProp name="scriptLanguage">beanshell</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey"></stringProp>
+              <stringProp name="script">import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+log.info(&quot;jsfViewState: &quot; + vars.get(&quot;jsfViewState&quot;));
+
+String response = new String(prev.getResponseData());
+
+Pattern p = Pattern.compile(&quot;&lt;input type=\&quot;hidden\&quot; name=\&quot;javax\\.faces\\.ViewState\&quot; id=\&quot;javax\\.faces\\.ViewState\&quot; value=\&quot;([^\&quot;]+)\&quot;.* /&gt;&quot;);
+Matcher m = p.matcher(response);
+
+if (! m.find()) return &quot;false&quot;;
+
+log.info(&quot;jsfViewState: &quot; + m.group(1));
+
+return vars.get(&quot;jsfViewState&quot;) != null;</stringProp>
+            </JSR223PostProcessor>
+            <hashTree/>
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="jsf View State id assertion" enabled="true">
+              <stringProp name="TestPlan.comments">											</stringProp>
+              <stringProp name="cacheKey">jsf.view.state.id.assertion</stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="script">// log.info(&quot;jsfViewState: &quot; + vars.get(&quot;jsfViewState&quot;));
+
+AssertionResult.setFailureMessage(&quot;jsf vew state id does not extracted from login page&quot;);
+AssertionResult.setFailure(vars.get(&quot;jsfViewState&quot;) == null);</stringProp>
+              <stringProp name="scriptLanguage">beanshell</stringProp>
+            </JSR223Assertion>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="submit login form" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="loginForm" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">loginForm</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">loginForm</stringProp>
+                </elementProp>
+                <elementProp name="loginForm:username" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.name">loginForm:username</stringProp>
+                  <stringProp name="Argument.value">${username}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+                <elementProp name="loginForm:password" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.name">loginForm:password</stringProp>
+                  <stringProp name="Argument.value">${password}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+                <elementProp name="javax.faces.ViewState" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.name">javax.faces.ViewState</stringProp>
+                  <stringProp name="Argument.value">${jsfViewState}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+                <elementProp name="loginForm:loginButton" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">Log in</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">loginForm:loginButton</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">localhost</stringProp>
+            <stringProp name="HTTPSampler.port">8080</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">${target.path}/login.jsf</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <boolProp name="HTTPSampler.monitor">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="Content-Type" elementType="Header">
+                  <stringProp name="Header.name">Content-Type</stringProp>
+                  <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+                </elementProp>
+                <elementProp name="Accept-Language" elementType="Header">
+                  <stringProp name="Header.name">Accept-Language</stringProp>
+                  <stringProp name="Header.value">en-us;q=0.750</stringProp>
+                </elementProp>
+                <elementProp name="Accept" elementType="Header">
+                  <stringProp name="Header.name">Accept</stringProp>
+                  <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</stringProp>
+                </elementProp>
+                <elementProp name="Origin" elementType="Header">
+                  <stringProp name="Header.name">Origin</stringProp>
+                  <stringProp name="Header.value">http://localhost:8080</stringProp>
+                </elementProp>
+                <elementProp name="User-Agent" elementType="Header">
+                  <stringProp name="Header.name">User-Agent</stringProp>
+                  <stringProp name="Header.value">Mozilla/5.0 (X11; Linux) AppleWebKit/537.6 (KHTML, like Gecko) Chrome/18.0.1025.133 Safari/537.6 Midori/0.4</stringProp>
+                </elementProp>
+                <elementProp name="Accept-Encoding" elementType="Header">
+                  <stringProp name="Header.name">Accept-Encoding</stringProp>
+                  <stringProp name="Header.value">gzip, deflate</stringProp>
+                </elementProp>
+                <elementProp name="Referer" elementType="Header">
+                  <stringProp name="Header.name">Referer</stringProp>
+                  <stringProp name="Header.value">http://localhost:8080${target.path}/login.jsf</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="login verification" enabled="true">
+              <stringProp name="scriptLanguage">beanshell</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">verify.user.login</stringProp>
+              <stringProp name="script">if (! SampleResult.getResponseHeaders().contains(&quot;recentposts.jsf&quot;)) {
+   AssertionResult.setFailure(true);
+   AssertionResult.setFailureMessage(&quot;login seems unsuccessful&quot;);
+} else {
+   vars.put(&quot;logged.in&quot;, &quot;true&quot;);
+   vars.put(&quot;refresh.recent.posts&quot;, &quot;0&quot;);
+}</stringProp>
+            </JSR223Assertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <TestFragmentController guiclass="TestFragmentControllerGui" testclass="TestFragmentController" testname="chirp fragment" enabled="true"/>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Simple Controller" enabled="true"/>
+        <hashTree>
+          <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If last post unknown" enabled="true">
+            <stringProp name="IfController.condition">${__BeanShell(vars.getObject(&quot;user.last.post&quot;).toString())} == &quot;-1&quot;</stringProp>
+            <boolProp name="IfController.evaluateAll">false</boolProp>
+          </IfController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get my posts" enabled="true">
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+              <stringProp name="HTTPSampler.domain">localhost</stringProp>
+              <stringProp name="HTTPSampler.port">8080</stringProp>
+              <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+              <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              <stringProp name="HTTPSampler.protocol">http</stringProp>
+              <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+              <stringProp name="HTTPSampler.path">${target.path}/myposts.jsf</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+              <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+              <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+              <boolProp name="HTTPSampler.monitor">false</boolProp>
+              <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="find my latest post" enabled="true">
+                <stringProp name="scriptLanguage">beanshell</stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="filename"></stringProp>
+                <stringProp name="cacheKey">userposts/JSR223/validation</stringProp>
+                <stringProp name="script">boolean valid = ! SampleResult.getResponseDataAsString().isEmpty() &amp;&amp; SampleResult.isResponseCodeOK();
+if (! valid) {
+   AssertionResult.setFailure(true);
+   AssertionResult.setFailureMessage(&quot;content of my posts does not look valid&quot;);
+   SampleResult.setStartNextThreadLoop(true); // tell thread to start next loop
+   vars.put(&quot;logged.in&quot;, &quot;false&quot;); // TODO: make sure the problem is expired session
+   return;
+}
+
+//
+// Find out our latest post while checking we see only posts from ourselves
+//
+String errMsg = &quot;&quot;;
+int expectedUser = Integer.parseInt(vars.get(&quot;username&quot;).substring(4));
+Map visibleLatestPosts = new TreeSet();
+java.util.regex.Pattern postPattern = vars.getObject(&quot;postPattern&quot;);
+matchesCount=1;
+// get latest visible posts for each user
+while ( (post = vars.get(&quot;recentPosts_&quot; + matchesCount++)) != null ) {
+   // log.info(post); // Post number 19 for user Name1523 at Tue Apr 09 20:43:21 EEST 2013
+
+   matcher = postPattern.matcher(post);
+   if (matcher.matches()) {
+      int user = Integer.parseInt(matcher.group(2));
+      if (expectedUser != user) {
+         errMsg = errMsg + &quot;expected post from user&quot; + expectedUser + &quot; but found one from user&quot; + user + &quot;, &quot;;
+         continue;
+      }
+      int postnum = Integer.parseInt(matcher.group(1));
+      visibleLatestPosts.add(postnum);
+   } else {
+      errMsg = errMsg + &quot;unparsable post for user&quot; + user + &quot;: &quot; + post + &quot;, &quot;;
+   }
+}
+
+vars.putObject(&quot;user.last.post&quot;, Integer.valueOf(visibleLatestPosts.last()));
+
+if (! errMsg.equals(&quot;&quot;)) {
+   AssertionResult.setFailure(true);
+   AssertionResult.setFailureMessage(errMsg);
+   // SampleResult.setStartNextThreadLoop(true); // tell thread to start next loop
+   // vars.put(&quot;logged.in&quot;, &quot;false&quot;); // TODO: make sure the problem is expired session
+   // return;
+}</stringProp>
+              </JSR223Assertion>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="chirp" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="tForm" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.name">tForm</stringProp>
+                  <stringProp name="Argument.value">tForm</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+                <elementProp name="tForm:message" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.name">tForm:message</stringProp>
+                  <stringProp name="Argument.value">${__BeanShell(&quot;Post number &quot; + (1 + vars.getObject(&quot;user.last.post&quot;)) + &quot; for user Name&quot; + vars.getObject(&quot;username&quot;).substring(4) + &quot; at &quot; + new Date())}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+                <elementProp name="tForm:chirp" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.name">tForm:chirp</stringProp>
+                  <stringProp name="Argument.value">Chirp</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+                <elementProp name="javax.faces.ViewState" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.name">javax.faces.ViewState</stringProp>
+                  <stringProp name="Argument.value">${jsfViewState}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">localhost</stringProp>
+            <stringProp name="HTTPSampler.port">8080</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="HTTPSampler.protocol">http</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+            <stringProp name="HTTPSampler.path">${target.path}/myposts.jsf</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <boolProp name="HTTPSampler.monitor">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="TestPlan.comments">	</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="validate the new posts" enabled="true">
+              <stringProp name="scriptLanguage">beanshell</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">userposts/JSR223/validation</stringProp>
+              <stringProp name="script">boolean valid = ! SampleResult.getResponseDataAsString().isEmpty() &amp;&amp; SampleResult.isResponseCodeOK();
+if (! valid) {
+   AssertionResult.setFailure(true);
+   AssertionResult.setFailureMessage(&quot;content of my posts does not look valid&quot;);
+   SampleResult.setStartNextThreadLoop(true); // tell thread to start next loop
+   vars.put(&quot;logged.in&quot;, &quot;false&quot;); // TODO: make sure the problem is expired session
+   return;
+}
+
+//
+// Make sure our post did actually hit the system
+//
+String errMsg = &quot;&quot;;
+int expectedUser = Integer.parseInt(vars.get(&quot;username&quot;).substring(4));
+Integer expectedPost = 1 + vars.getObject(&quot;user.last.post&quot;);
+boolean postFound = false;
+java.util.regex.Pattern postPattern = vars.getObject(&quot;postPattern&quot;);
+matchesCount=1;
+// get latest visible posts for each user
+while ( (post = vars.get(&quot;recentPosts_&quot; + matchesCount++)) != null ) {
+   // log.info(post); // Post number 19 for user Name1523 at Tue Apr 09 20:43:21 EEST 2013
+
+   matcher = postPattern.matcher(post);
+   if (matcher.matches()) {
+      int user = Integer.parseInt(matcher.group(2));
+      if (expectedUser != user) {
+         errMsg = errMsg + &quot;expected post from user&quot; + expectedUser + &quot; but found one from user&quot; + user + &quot;, &quot;;
+         continue;
+      }
+      int postnum = Integer.parseInt(matcher.group(1));
+
+      if (postnum == expectedPost.intValue()) {
+         postFound = true;
+         break;
+      } else if ( postnum &gt; expectedPost.intValue()) {
+         errMsg = errMsg + &quot;found post older than what we have just submitted: user&quot; + user + &quot;, post:&quot; + post + &quot;, &quot;;
+      }
+   } else {
+      errMsg = errMsg + &quot;unparsable post for user&quot; + user + &quot;: &quot; + post + &quot;, &quot;;
+   }
+}
+
+if (postFound) {
+   vars.putObject(&quot;user.last.post&quot;, expectedPost);
+} else {
+   errMsg = errMsg + &quot;post we submitted is not visible in UI: user&quot; + expectedUser + &quot;, post:&quot; + expectedPost + &quot;, &quot;;
+}
+
+if (! errMsg.equals(&quot;&quot;)) {
+   AssertionResult.setFailure(true);
+   AssertionResult.setFailureMessage(errMsg);
+   // SampleResult.setStartNextThreadLoop(true); // tell thread to start next loop
+   // vars.put(&quot;logged.in&quot;, &quot;false&quot;); // TODO: make sure the problem is expired session
+   // return;
+}</stringProp>
+            </JSR223Assertion>
+            <hashTree/>
+          </hashTree>
+          <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="extract my posts from page" enabled="true">
+            <stringProp name="TestPlan.comments">return visible watched users&apos; posts</stringProp>
+            <stringProp name="XPathExtractor.default"></stringProp>
+            <stringProp name="XPathExtractor.refname">recentPosts</stringProp>
+            <stringProp name="XPathExtractor.xpathQuery">//div[@class=&quot;rf-p-b&quot;]//*[text()!=&apos;&apos;]</stringProp>
+            <boolProp name="XPathExtractor.validate">false</boolProp>
+            <boolProp name="XPathExtractor.tolerant">true</boolProp>
+            <boolProp name="XPathExtractor.namespace">false</boolProp>
+          </XPathExtractor>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <TestFragmentController guiclass="TestFragmentControllerGui" testclass="TestFragmentController" testname="logout fragment" enabled="true"/>
+      <hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="on every 101 requests" enabled="true">
+          <stringProp name="IfController.condition">${user.iterations} &gt; 0 &amp;&amp; ${user.iterations} % 101 == 0</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+        </IfController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Request Logoff" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain"></stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">${target.logoutpath}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <boolProp name="HTTPSampler.monitor">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+          <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler" enabled="false">
+            <stringProp name="BeanShellSampler.query">print(&quot;${user.iterations}&quot;);</stringProp>
+            <stringProp name="BeanShellSampler.filename"></stringProp>
+            <stringProp name="BeanShellSampler.parameters"></stringProp>
+            <boolProp name="BeanShellSampler.resetInterpreter">false</boolProp>
+          </BeanShellSampler>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>false</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
