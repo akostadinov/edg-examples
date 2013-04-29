@@ -197,9 +197,12 @@ public class ChunchunServlet extends HttpServlet {
       } else if ("userstats".equals(command)) {
 
          //http://localhost:8080/chunchun/chunchunservlet?command=userstats
-         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-         answer.append("Output version: 1.0.14" + " at: " + sdf. format(Calendar.getInstance().getTime()) + System.lineSeparator());
+         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy kk:mm:ss");
+         answer.append("Output version: 1.0.15" + " at: " + sdf. format(Calendar.getInstance().getTime()) + System.lineSeparator());
 
+         boolean detailed = false;
+         if ("detailed".equals(request.getParameter("mode"))) detailed = true; 
+         
          int moreWatches = 0;
          int lessWatches = 0;
          int moreMutualWatches = 0;
@@ -230,7 +233,7 @@ public class ChunchunServlet extends HttpServlet {
             } else if (mutualWatches * 100l - 1l >= mutualWatchesAnticipated) {
                moreMutualWatches++;
             }
-            answer.append("\n").append(curUser + " mutual watched: " + mutualWatches);
+            if (detailed) answer.append("\n").append(curUser + " posts: " + uCurUser.getPosts().size() + ", mutual watched: " + mutualWatches);
          }
 
          answer.append("\n").append("Total users: " + InitializeCache.getUserCount());
