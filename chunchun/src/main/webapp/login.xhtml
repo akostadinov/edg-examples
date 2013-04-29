@@ -12,7 +12,7 @@
 </h:head>
 
 <body>
-<h:form>
+<h:form id="loginForm" prependId="true">
 
 <div id="login">
 	<h:outputText value="Chunchun" class="heading"/>
@@ -33,7 +33,7 @@
         
         <h:panelGrid columns="1">
             <h:outputLabel value="&nbsp;"/>
-            <h:commandButton action="#{auth.login}" value="Log in" class="signinbutton" />
+            <h:commandButton id="loginButton" action="#{auth.login}" value="Log in" class="signinbutton" />
         </h:panelGrid>
         
     </h:panelGrid>

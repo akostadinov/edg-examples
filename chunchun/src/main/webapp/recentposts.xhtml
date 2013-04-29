@@ -7,7 +7,6 @@
     xmlns:rich="http://richfaces.org/rich">
     
 <ui:composition template="template.xhtml">
-
 	<ui:define name="headerarea">
         <div class="headerinput">
        		<div id="headerinputleft">
@@ -19,11 +18,11 @@
        			<h:panelGrid columns="1">
        				<h:outputText value="What comes to your mind..."/>
 	        		<h:inputTextarea value="#{postBean.message}" id="message"/>
-	        		<h:commandButton action="#{postBean.sendPost}" value="Chirp" class="signinbutton" />
+	        		<h:commandButton action="#{postBean.sendPost}" value="Chirp" id="chirp" class="signinbutton" />
 	        	</h:panelGrid>
 	        	<h:panelGrid columns="2" styleClass="linkspanel">
 	        		<h:panelGrid columns="7">
-				        <h:commandLink value="Refresh" action="#{postBean.resetRecentPosts()}"/>
+				        <h:commandLink value="Refresh" id="refresh" action="#{postBean.resetRecentPosts()}"/>
 				        <h:graphicImage value="/image/divider.png" styleClass="divider" alt=""/>
 		        		<h:link outcome="myposts.jsf" value="My posts"/>
 		        		<h:graphicImage value="/image/divider.png" styleClass="divider" alt=""/>
@@ -78,7 +77,6 @@
 	            </a4j:outputPanel>
 	        </h:panelGrid>
 	</ui:define>
-	
 </ui:composition>
 
 </html>
